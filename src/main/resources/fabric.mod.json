@@ -1,0 +1,31 @@
+{
+	"schemaVersion": 1,
+	"id": "dfuncopto",
+	"version": "${version}",
+	"name": "DfuncOpto",
+	"description": "A tree simplifier for density functions",
+	"authors": [
+		"ishland"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/dfuncopto/icon.png",
+	"environment": "*",
+	"accessWidener": "dfuncopto.accesswidener",
+	"entrypoints": {
+		"main": [
+			"com.ishland.dfuncopto.TheMod"
+		]
+	},
+	"mixins": [
+		"dfuncopto.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.14.21",
+		"minecraft": "~1.20.1",
+		"java": ">=17"
+	}
+}
