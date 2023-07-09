@@ -1,5 +1,6 @@
 package com.ishland.dfuncopto.common;
 
+import com.ishland.dfuncopto.common.debug.DotExporter;
 import com.ishland.dfuncopto.common.opto.BreakBlending;
 import com.ishland.dfuncopto.common.opto.FoldConstants;
 import com.ishland.dfuncopto.common.opto.InlineHolders;
@@ -12,13 +13,17 @@ import java.util.function.Function;
 public class OptoTransformation {
 
     public static DensityFunction copyAndOptimize(String name, DensityFunction df) {
-        return copyAndOptimize(name, df,
+        final long id = DotExporter.ID.incrementAndGet();
+        DotExporter.writeToDisk(id + "-" + name + "-before", df);
+        final DensityFunction optimized = copyAndOptimize(name, df,
                 InlineHolders::inline,
                 BreakBlending::breakBlending,
                 FoldConstants::fold,
                 NormalizeTree::normalize,
                 InstCombine::combine
         );
+        DotExporter.writeToDisk(id + "-" + name + "-after", optimized);
+        return optimized;
     }
 
     @SafeVarargs
