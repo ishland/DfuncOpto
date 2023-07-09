@@ -1,4 +1,4 @@
-package com.ishland.dfuncopto.mixin;
+package com.ishland.dfuncopto.mixin.dfts;
 
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
@@ -7,8 +7,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(DensityFunctionTypes.ShiftA.class)
-public class MixinDFTShiftA {
+@Mixin(DensityFunctionTypes.ShiftB.class)
+public class MixinDFTShiftB {
 
     @Shadow @Final private DensityFunction.Noise offsetNoise;
 

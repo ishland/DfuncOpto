@@ -1,4 +1,4 @@
-package com.ishland.dfuncopto.mixin;
+package com.ishland.dfuncopto.mixin.dfts;
 
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
@@ -10,19 +10,21 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(DensityFunctionTypes.WeirdScaledSampler.class)
-public class MixinDFTWeirdScaledSampler implements IDensityFunction<DensityFunctionTypes.WeirdScaledSampler> {
+@Mixin(DensityFunctionTypes.UnaryOperation.class)
+public class MixinDFTUnaryOperation implements IDensityFunction<DensityFunctionTypes.UnaryOperation> {
+
+    @Shadow @Final private DensityFunctionTypes.UnaryOperation.Type type;
 
     @Mutable
     @Shadow @Final private DensityFunction input;
 
-    @Shadow @Final private DensityFunction.Noise noise;
+    @Shadow @Final private double minValue;
 
-    @Shadow @Final private DensityFunctionTypes.WeirdScaledSampler.RarityValueMapper rarityValueMapper;
+    @Shadow @Final private double maxValue;
 
     @Override
-    public DensityFunctionTypes.WeirdScaledSampler dfuncopto$deepClone() {
-        return new DensityFunctionTypes.WeirdScaledSampler(DensityFunctionUtil.deepClone(this.input), this.noise, this.rarityValueMapper);
+    public DensityFunctionTypes.UnaryOperation dfuncopto$deepClone() {
+        return new DensityFunctionTypes.UnaryOperation(this.type, DensityFunctionUtil.deepClone(this.input), this.minValue, this.maxValue);
     }
 
     @Override
@@ -46,12 +48,13 @@ public class MixinDFTWeirdScaledSampler implements IDensityFunction<DensityFunct
      * @reason Reduce object allocation
      */
     @Overwrite
-    public DensityFunction apply(DensityFunction.DensityFunctionVisitor visitor) {
-        final DensityFunction apply1 = this.input.apply(visitor);
-        final DensityFunction.Noise apply2 = visitor.apply(this.noise);
-        if (apply1 == this.input && apply2 == this.noise) {
-            return visitor.apply((DensityFunction) this);
+    public DensityFunctionTypes.UnaryOperation apply(DensityFunction.DensityFunctionVisitor visitor) {
+        final DensityFunction apply = this.input.apply(visitor);
+
+        // there is no visitor call for `this` in vanilla, but we call it anyway
+        if (apply == this.input) {
+            return (DensityFunctionTypes.UnaryOperation) visitor.apply((DensityFunction) this);
         }
-        return visitor.apply(new DensityFunctionTypes.WeirdScaledSampler(apply1, apply2, this.rarityValueMapper));
+        return (DensityFunctionTypes.UnaryOperation) visitor.apply(DensityFunctionTypes.UnaryOperation.create(this.type, apply));
     }
 }

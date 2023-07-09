@@ -1,4 +1,4 @@
-package com.ishland.dfuncopto.mixin;
+package com.ishland.dfuncopto.mixin.dfts;
 
 import com.ishland.dfuncopto.common.IDensityFunction;
 import net.minecraft.registry.entry.RegistryEntry;

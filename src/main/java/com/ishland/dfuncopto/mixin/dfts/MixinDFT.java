@@ -1,4 +1,4 @@
-package com.ishland.dfuncopto.mixin;
+package com.ishland.dfuncopto.mixin.dfts;
 
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 import org.spongepowered.asm.mixin.Mixin;

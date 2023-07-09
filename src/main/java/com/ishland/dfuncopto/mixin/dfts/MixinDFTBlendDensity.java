@@ -1,4 +1,4 @@
-package com.ishland.dfuncopto.mixin;
+package com.ishland.dfuncopto.mixin.dfts;
 
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
@@ -10,19 +10,15 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(DensityFunctionTypes.Clamp.class)
-public class MixinDFTClamp implements IDensityFunction<DensityFunctionTypes.Clamp> {
+@Mixin(DensityFunctionTypes.BlendDensity.class)
+public class MixinDFTBlendDensity implements IDensityFunction<DensityFunctionTypes.BlendDensity> {
 
     @Mutable
     @Shadow @Final private DensityFunction input;
 
-    @Shadow @Final private double minValue;
-
-    @Shadow @Final private double maxValue;
-
     @Override
-    public DensityFunctionTypes.Clamp dfuncopto$deepClone() {
-        return new DensityFunctionTypes.Clamp(DensityFunctionUtil.deepClone(this.input), this.minValue, this.maxValue);
+    public DensityFunctionTypes.BlendDensity dfuncopto$deepClone() {
+        return new DensityFunctionTypes.BlendDensity(DensityFunctionUtil.deepClone(this.input));
     }
 
     @Override
@@ -49,6 +45,6 @@ public class MixinDFTClamp implements IDensityFunction<DensityFunctionTypes.Clam
     public DensityFunction apply(DensityFunction.DensityFunctionVisitor visitor) {
         final DensityFunction apply = this.input.apply(visitor);
         if (apply == this.input) return visitor.apply((DensityFunction) this);
-        return new DensityFunctionTypes.Clamp(apply, this.minValue, this.maxValue);
+        return visitor.apply(new DensityFunctionTypes.BlendDensity(apply));
     }
 }
