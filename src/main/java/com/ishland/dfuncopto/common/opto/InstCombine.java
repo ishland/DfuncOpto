@@ -6,16 +6,14 @@ import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 public class InstCombine {
 
     public static DensityFunction combine(DensityFunction df) {
-        if (df instanceof DensityFunctionTypes.BinaryOperation operation) {
-            // Combine two additions, constant should always be arg2 (see NormalizeTree)
-            if (operation.argument2() instanceof DensityFunctionTypes.Constant c1) {
-                if (operation.argument1() instanceof DensityFunctionTypes.BinaryOperation a && a.argument2() instanceof DensityFunctionTypes.Constant c2) {
-                    if (a.type() == DensityFunctionTypes.BinaryOperationLike.Type.ADD && operation.type() == DensityFunctionTypes.BinaryOperationLike.Type.ADD) {
-                        return new DensityFunctionTypes.BinaryOperation(DensityFunctionTypes.BinaryOperationLike.Type.ADD, a.argument1(), new DensityFunctionTypes.Constant(c1.value() + c2.value()), operation.minValue(), operation.maxValue());
-                    }
-                    if (a.type() == DensityFunctionTypes.BinaryOperationLike.Type.MUL && operation.type() == DensityFunctionTypes.BinaryOperationLike.Type.MUL) {
-                        return new DensityFunctionTypes.BinaryOperation(DensityFunctionTypes.BinaryOperationLike.Type.MUL, a.argument1(), new DensityFunctionTypes.Constant(c1.value() * c2.value()), operation.minValue(), operation.maxValue());
-                    }
+        if (df instanceof DensityFunctionTypes.LinearOperation operation) {
+            // Combine two additions, constant should always be arg1
+            if (operation.argument2() instanceof DensityFunctionTypes.LinearOperation inner) {
+                if (inner.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.ADD && operation.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.ADD) {
+                    return new DensityFunctionTypes.LinearOperation(DensityFunctionTypes.LinearOperation.SpecificType.ADD, inner.argument2(), operation.minValue(), operation.maxValue(), operation.argument() + inner.argument());
+                }
+                if (inner.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.MUL && operation.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.MUL) {
+                    return new DensityFunctionTypes.LinearOperation(DensityFunctionTypes.LinearOperation.SpecificType.MUL, inner.argument2(), operation.minValue(), operation.maxValue(), operation.argument() * inner.argument());
                 }
             }
         }

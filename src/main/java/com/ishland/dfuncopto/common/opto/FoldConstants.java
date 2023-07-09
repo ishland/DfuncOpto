@@ -30,7 +30,8 @@ public class FoldConstants {
             return new DensityFunctionTypes.Constant(0.0);
         }
 
-        if (df instanceof DensityFunctionTypes.BinaryOperation op) {
+        // when this executes for folding constants, it should be already converted to LinearOperation
+        if (df instanceof DensityFunctionTypes.LinearOperation op) {
             if (op.argument1() instanceof DensityFunctionTypes.Constant const1 && op.argument2() instanceof DensityFunctionTypes.Constant const2) {
                 return switch (op.type()) {
                     case ADD -> new DensityFunctionTypes.Constant(const1.value() + const2.value());
@@ -39,18 +40,17 @@ public class FoldConstants {
                     case MAX -> new DensityFunctionTypes.Constant(Math.max(const1.value(), const2.value()));
                 };
             }
-            // constant should always be arg2 (see NormalizeTree)
-            if (op.argument2() instanceof DensityFunctionTypes.Constant constant) {
-                if (op.type() == DensityFunctionTypes.BinaryOperationLike.Type.ADD && constant.value() == 0.0) {
-                    return op.argument1();
+
+            // elimination
+            if (op.type() == DensityFunctionTypes.BinaryOperationLike.Type.ADD && op.argument() == 0.0) {
+                return op.argument2();
+            }
+            if (op.type() == DensityFunctionTypes.BinaryOperationLike.Type.MUL) {
+                if (op.argument() == 0.0) {
+                    return new DensityFunctionTypes.Constant(0.0);
                 }
-                if (op.type() == DensityFunctionTypes.BinaryOperationLike.Type.MUL) {
-                    if (constant.value() == 0.0) {
-                        return new DensityFunctionTypes.Constant(0.0);
-                    }
-                    if (constant.value() == 1.0) {
-                        return op.argument1();
-                    }
+                if (op.argument() == 1.0) {
+                    return op.argument2();
                 }
             }
         }

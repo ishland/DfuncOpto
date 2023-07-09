@@ -54,8 +54,8 @@ public class OptoTransformation {
                 for (Function<DensityFunction, DensityFunction> visitor : visitors) {
                     DensityFunction apply = visitor.apply(child);
                     if (apply != null && apply != child) {
-//                        System.out.println(String.format("Replacing %s", child));
-//                        System.out.println(String.format("With %s", apply));
+                        System.out.println(String.format("Replacing %s", child));
+                        System.out.println(String.format("With %s", apply));
                         idf.dfuncopto$replace(child, apply);
                         return true;
                     }
