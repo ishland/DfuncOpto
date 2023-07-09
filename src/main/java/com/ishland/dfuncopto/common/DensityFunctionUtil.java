@@ -2,19 +2,15 @@ package com.ishland.dfuncopto.common;
 
 import com.google.common.collect.ImmutableList;
 import com.ishland.dfuncopto.mixin.access.ISplineImplementation;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.function.ToFloatFunction;
 import net.minecraft.util.math.Spline;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 public class DensityFunctionUtil {
 
