@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(DensityFunctionTypes.LinearOperation.class)
-public class MixinDFTLinearOperation implements IDensityFunction<DensityFunctionTypes.LinearOperation> {
+public abstract class MixinDFTLinearOperation implements IDensityFunction<DensityFunctionTypes.LinearOperation>, DensityFunctionTypes.Unary, DensityFunctionTypes.BinaryOperationLike {
     @Shadow @Final private DensityFunctionTypes.LinearOperation.SpecificType specificType;
 
     @Mutable
@@ -70,5 +70,22 @@ public class MixinDFTLinearOperation implements IDensityFunction<DensityFunction
         }
 
         return new DensityFunctionTypes.LinearOperation(this.specificType, densityFunction, f, g, this.argument);
+    }
+
+    @Override
+    public void fill(double[] densities, DensityFunction.EachApplier applier) {
+        this.input.fill(densities, applier);
+        switch (this.specificType) {
+            case MUL -> {
+                for (int i = 0, densitiesLength = densities.length; i < densitiesLength; i++) {
+                    densities[i] *= this.argument;
+                }
+            }
+            case ADD -> {
+                for (int i = 0, densitiesLength = densities.length; i < densitiesLength; i++) {
+                    densities[i] += this.argument;
+                }
+            }
+        }
     }
 }
