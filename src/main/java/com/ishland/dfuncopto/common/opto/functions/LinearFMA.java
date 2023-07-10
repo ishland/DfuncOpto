@@ -24,14 +24,14 @@ public final class LinearFMA implements IDensityFunction<LinearFMA>, DensityFunc
 
     @Override
     public double sample(NoisePos pos) {
-        return Math.fma(input.sample(pos), mul, add);
+        return input.sample(pos) * mul + add;
     }
 
     @Override
     public void fill(double[] densities, EachApplier applier) {
         input.fill(densities, applier);
         for (int i = 0; i < densities.length; i++) {
-            densities[i] = Math.fma(densities[i], mul, add);
+            densities[i] = densities[i] * mul + add;
         }
     }
 
