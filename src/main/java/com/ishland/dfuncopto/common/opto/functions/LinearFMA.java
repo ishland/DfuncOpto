@@ -2,6 +2,7 @@ package com.ishland.dfuncopto.common.opto.functions;
 
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
+import com.ishland.dfuncopto.common.SharedConstants;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.util.dynamic.CodecHolder;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
@@ -25,14 +26,24 @@ public final class LinearFMA implements IDensityFunction<LinearFMA>, DensityFunc
 
     @Override
     public double sample(NoisePos pos) {
-        return input.sample(pos) * mul + add;
+        if (SharedConstants.hasFMA) {
+            return Math.fma(input.sample(pos), mul, add);
+        } else {
+            return input.sample(pos) * mul + add;
+        }
     }
 
     @Override
     public void fill(double[] densities, EachApplier applier) {
         input.fill(densities, applier);
-        for (int i = 0; i < densities.length; i++) {
-            densities[i] = densities[i] * mul + add;
+        if (SharedConstants.hasFMA) {
+            for (int i = 0; i < densities.length; i++) {
+                densities[i] = Math.fma(densities[i], mul, add);
+            }
+        } else {
+            for (int i = 0; i < densities.length; i++) {
+                densities[i] = densities[i] * mul + add;
+            }
         }
     }
 

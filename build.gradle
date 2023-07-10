@@ -29,6 +29,12 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
+	// https://mvnrepository.com/artifact/io.github.aecsocket/cpu-features-jni
+	include implementation('io.github.aecsocket:cpu-features-jni:1.0.1')
+	include implementation('io.github.aecsocket:cpu-features-jni-natives-linux:1.0.1')
+	include implementation('io.github.aecsocket:cpu-features-jni-natives-macos:1.0.1')
+	include implementation('io.github.aecsocket:cpu-features-jni-natives-windows:1.0.1')
+
 	// Fabric API. This is technically optional, but you probably want it anyway.
 //	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	
