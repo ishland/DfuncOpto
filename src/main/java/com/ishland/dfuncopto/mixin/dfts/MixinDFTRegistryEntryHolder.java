@@ -1,6 +1,7 @@
 package com.ishland.dfuncopto.mixin.dfts;
 
 import com.ishland.dfuncopto.common.IDensityFunction;
+import com.ishland.dfuncopto.common.SharedConstants;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
@@ -26,7 +27,7 @@ public class MixinDFTRegistryEntryHolder implements IDensityFunction<DensityFunc
         if (this.function == original) {
             this.function = new RegistryEntry.Direct<>(replacement);
         } else {
-            throw new IllegalStateException("Cannot replace non-child node!");
+            throw new IllegalArgumentException(SharedConstants.INVALID_ORIGINAL_DFUNC);
         }
     }
 

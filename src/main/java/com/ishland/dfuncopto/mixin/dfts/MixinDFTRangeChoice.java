@@ -2,6 +2,7 @@ package com.ishland.dfuncopto.mixin.dfts;
 
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
+import com.ishland.dfuncopto.common.SharedConstants;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
@@ -39,15 +40,20 @@ public class MixinDFTRangeChoice implements IDensityFunction<DensityFunctionType
 
     @Override
     public void dfuncopto$replace(DensityFunction original, DensityFunction replacement) {
+        boolean hasReplaced = false;
         if (this.input == original) {
             this.input = replacement;
-        } else if (this.whenInRange == original) {
-            this.whenInRange = replacement;
-        } else if (this.whenOutOfRange == original) {
-            this.whenOutOfRange = replacement;
-        } else {
-            throw new IllegalStateException("Cannot replace non-child node!");
+            hasReplaced = true;
         }
+        if (this.whenInRange == original) {
+            this.whenInRange = replacement;
+            hasReplaced = true;
+        }
+        if (this.whenOutOfRange == original) {
+            this.whenOutOfRange = replacement;
+            hasReplaced = true;
+        }
+        if (!hasReplaced) throw new IllegalArgumentException(SharedConstants.INVALID_ORIGINAL_DFUNC);
     }
 
     @Override

@@ -67,10 +67,10 @@ public final class LinearFMA implements IDensityFunction<LinearFMA>, DensityFunc
 
     @Override
     public void dfuncopto$replace(DensityFunction original, DensityFunction replacement) {
-        if (this.input == original) {
-            this.input = replacement;
+        if (input == original) {
+            input = replacement;
         } else {
-            throw new IllegalStateException("Cannot replace non-child node!");
+            throw new IllegalArgumentException("Original density function is not a child of this density function");
         }
     }
 

@@ -9,6 +9,8 @@ import cpufeatures.x86.X86Feature;
 
 public class SharedConstants {
 
+    public static final String INVALID_ORIGINAL_DFUNC = "Original density function is not a child of this density function";
+
     public static boolean hasFMA;
 
     static {

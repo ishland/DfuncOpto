@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.ishland.dfuncopto.mixin.access.ISplineImplementation;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.function.ToFloatFunction;
 import net.minecraft.util.math.Spline;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
@@ -52,7 +53,7 @@ public class DensityFunctionUtil {
             if (implementation.locationFunction() instanceof DensityFunctionTypes.Spline.DensityFunctionWrapper wrapper) {
                 final DensityFunction apply = Objects.requireNonNullElse(function.apply(wrapper.function().value()), wrapper.function().value());
                 if (apply != wrapper.function().value()) {
-                    ((ISplineImplementation<C, I>) (Object) implementation).setLocationFunction((I) apply);
+                    ((ISplineImplementation<C, I>) (Object) implementation).setLocationFunction((I) new DensityFunctionTypes.Spline.DensityFunctionWrapper(new RegistryEntry.Direct<>(apply)));
                     modified = true;
                 }
             }

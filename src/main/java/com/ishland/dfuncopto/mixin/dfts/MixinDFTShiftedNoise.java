@@ -2,6 +2,7 @@ package com.ishland.dfuncopto.mixin.dfts;
 
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
+import com.ishland.dfuncopto.common.SharedConstants;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
@@ -44,15 +45,20 @@ public class MixinDFTShiftedNoise implements IDensityFunction<DensityFunctionTyp
 
     @Override
     public void dfuncopto$replace(DensityFunction original, DensityFunction replacement) {
+        boolean hasReplaced = false;
         if (this.shiftX == original) {
             this.shiftX = replacement;
-        } else if (this.shiftY == original) {
-            this.shiftY = replacement;
-        } else if (this.shiftZ == original) {
-            this.shiftZ = replacement;
-        } else {
-            throw new IllegalStateException("Cannot replace non-child node!");
+            hasReplaced = true;
         }
+        if (this.shiftY == original) {
+            this.shiftY = replacement;
+            hasReplaced = true;
+        }
+        if (this.shiftZ == original) {
+            this.shiftZ = replacement;
+            hasReplaced = true;
+        }
+        if (!hasReplaced) throw new IllegalArgumentException(SharedConstants.INVALID_ORIGINAL_DFUNC);
     }
 
     @Override

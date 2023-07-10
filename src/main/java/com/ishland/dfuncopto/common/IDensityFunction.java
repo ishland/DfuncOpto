@@ -20,6 +20,14 @@ public interface IDensityFunction<T extends DensityFunction> {
 
     T dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache);
 
+    /**
+     * Replaces the original density function with the replacement density function.
+     *
+     * @param original the original density function
+     * @param replacement the replacement density function
+     * @throws IllegalArgumentException if the original density function is not a child of this density function
+     * @implNote Implementations should replace all references to the original density function with the replacement density function.
+     */
     void dfuncopto$replace(DensityFunction original, DensityFunction replacement);
 
     DensityFunction[] dfuncopto$getChildren();
