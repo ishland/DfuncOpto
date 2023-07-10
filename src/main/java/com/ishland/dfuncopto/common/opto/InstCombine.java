@@ -1,5 +1,6 @@
 package com.ishland.dfuncopto.common.opto;
 
+import com.ishland.dfuncopto.common.opto.functions.LinearFMA;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 
@@ -14,6 +15,9 @@ public class InstCombine {
                 }
                 if (inner.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.MUL && operation.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.MUL) {
                     return new DensityFunctionTypes.LinearOperation(DensityFunctionTypes.LinearOperation.SpecificType.MUL, inner.argument2(), operation.minValue(), operation.maxValue(), operation.argument() * inner.argument());
+                }
+                if (inner.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.MUL && operation.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.ADD) {
+                    return new LinearFMA(inner.argument2(), operation.minValue(), operation.maxValue(), inner.argument(), operation.argument());
                 }
             }
         }
