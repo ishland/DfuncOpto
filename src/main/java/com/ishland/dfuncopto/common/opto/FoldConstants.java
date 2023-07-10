@@ -1,5 +1,6 @@
 package com.ishland.dfuncopto.common.opto;
 
+import com.ishland.dfuncopto.common.opto.functions.LinearFMA;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 
@@ -52,6 +53,19 @@ public class FoldConstants {
                 if (op.argument() == 1.0) {
                     return op.argument2();
                 }
+            }
+        }
+
+        if (df instanceof LinearFMA op) {
+            // elimination
+            if (op.add() == 0) {
+                return new DensityFunctionTypes.LinearOperation(DensityFunctionTypes.LinearOperation.SpecificType.MUL, op.input(), op.minValue(), op.maxValue(), op.mul());
+            }
+            if (op.mul() == 1) {
+                return new DensityFunctionTypes.LinearOperation(DensityFunctionTypes.LinearOperation.SpecificType.ADD, op.input(), op.minValue(), op.maxValue(), op.add());
+            }
+            if (op.mul() == 0) {
+                return new DensityFunctionTypes.Constant(op.add());
             }
         }
 
