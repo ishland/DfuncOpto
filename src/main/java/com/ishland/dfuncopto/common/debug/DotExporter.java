@@ -102,6 +102,7 @@ public class DotExporter {
 
     private static String getNodeName(DensityFunction df) {
         StringBuilder builder = new StringBuilder();
+        builder.append(System.identityHashCode(df)).append('\n');
         builder.append(getClazzName(df.getClass())).append('\n');
         for (Field field : df.getClass().getDeclaredFields()) {
             if (DensityFunction.class.isAssignableFrom(field.getType())) continue;

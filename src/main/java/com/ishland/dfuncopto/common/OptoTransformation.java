@@ -14,8 +14,9 @@ public class OptoTransformation {
 
     public static DensityFunction copyAndOptimize(String name, DensityFunction df) {
         final long id = DotExporter.ID.incrementAndGet();
-        DotExporter.writeToDisk(id + "-" + name + "-before", df);
-        final DensityFunction optimized = copyAndOptimize(name, df,
+        final DensityFunction copy = DensityFunctionUtil.deepClone(df);
+        DotExporter.writeToDisk(id + "-" + name + "-before", copy);
+        final DensityFunction optimized = optimize(name, copy,
                 InlineHolders::inline,
                 BreakBlending::breakBlending,
                 FoldConstants::fold,
