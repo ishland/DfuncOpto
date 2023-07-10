@@ -2,6 +2,7 @@ package com.ishland.dfuncopto.mixin.dfts;
 
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 import org.spongepowered.asm.mixin.Final;
@@ -26,13 +27,13 @@ public class MixinDFTRangeChoice implements IDensityFunction<DensityFunctionType
     @Shadow @Final private DensityFunction whenOutOfRange;
 
     @Override
-    public DensityFunctionTypes.RangeChoice dfuncopto$deepClone() {
+    public DensityFunctionTypes.RangeChoice dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
         return new DensityFunctionTypes.RangeChoice(
-                DensityFunctionUtil.deepClone(this.input),
+                DensityFunctionUtil.deepClone(this.input, cloneCache),
                 this.minInclusive,
                 this.maxExclusive,
-                DensityFunctionUtil.deepClone(this.whenInRange),
-                DensityFunctionUtil.deepClone(this.whenOutOfRange)
+                DensityFunctionUtil.deepClone(this.whenInRange, cloneCache),
+                DensityFunctionUtil.deepClone(this.whenOutOfRange, cloneCache)
         );
     }
 

@@ -2,6 +2,7 @@ package com.ishland.dfuncopto.mixin.dfts;
 
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.util.math.Spline;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
@@ -17,8 +18,8 @@ public class MixinDFTSpline implements IDensityFunction<DensityFunctionTypes.Spl
     @Shadow @Final private Spline<DensityFunctionTypes.Spline.SplinePos, DensityFunctionTypes.Spline.DensityFunctionWrapper> spline;
 
     @Override
-    public DensityFunctionTypes.Spline dfuncopto$deepClone() {
-        return new DensityFunctionTypes.Spline(DensityFunctionUtil.deepClone(this.spline));
+    public DensityFunctionTypes.Spline dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
+        return new DensityFunctionTypes.Spline(DensityFunctionUtil.deepClone(this.spline, cloneCache));
     }
 
     @Override

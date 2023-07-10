@@ -2,6 +2,8 @@ package com.ishland.dfuncopto.common;
 
 import com.google.common.collect.ImmutableList;
 import com.ishland.dfuncopto.mixin.access.ISplineImplementation;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.util.function.ToFloatFunction;
 import net.minecraft.util.math.Spline;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
@@ -14,17 +16,17 @@ import java.util.function.Function;
 
 public class DensityFunctionUtil {
 
-    public static DensityFunction deepClone(DensityFunction df) {
+    public static DensityFunction deepClone(DensityFunction df, Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
         if (df instanceof IDensityFunction<?> iDensityFunction) {
-            return iDensityFunction.dfuncopto$deepClone();
+            return iDensityFunction.dfuncopto$deepClone(cloneCache);
         }
         return df;
     }
 
-    public static <C, I extends ToFloatFunction<C>> Spline<C, I> deepClone(Spline<C, I> spline) {
+    public static <C, I extends ToFloatFunction<C>> Spline<C, I> deepClone(Spline<C, I> spline, Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
         if (spline instanceof Spline.Implementation<C,I> implementation) {
-            I locationFunction = implementation.locationFunction() instanceof DensityFunction df ? (I) deepClone(df) : implementation.locationFunction();
-            List<Spline<C, I>> values = implementation.values().stream().map(DensityFunctionUtil::deepClone).toList();
+            I locationFunction = implementation.locationFunction() instanceof DensityFunction df ? (I) deepClone(df, cloneCache) : implementation.locationFunction();
+            List<Spline<C, I>> values = implementation.values().stream().map(spline1 -> deepClone(spline1, cloneCache)).toList();
             return new Spline.Implementation<>(
                     locationFunction,
                     implementation.locations().clone(),

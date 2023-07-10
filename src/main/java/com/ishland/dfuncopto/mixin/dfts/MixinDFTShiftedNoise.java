@@ -2,6 +2,7 @@ package com.ishland.dfuncopto.mixin.dfts;
 
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 import org.spongepowered.asm.mixin.Final;
@@ -30,11 +31,11 @@ public class MixinDFTShiftedNoise implements IDensityFunction<DensityFunctionTyp
     @Shadow @Final private DensityFunction.Noise noise;
 
     @Override
-    public DensityFunctionTypes.ShiftedNoise dfuncopto$deepClone() {
+    public DensityFunctionTypes.ShiftedNoise dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
         return new DensityFunctionTypes.ShiftedNoise(
-                DensityFunctionUtil.deepClone(this.shiftX),
-                DensityFunctionUtil.deepClone(this.shiftY),
-                DensityFunctionUtil.deepClone(this.shiftZ),
+                DensityFunctionUtil.deepClone(this.shiftX, cloneCache),
+                DensityFunctionUtil.deepClone(this.shiftY, cloneCache),
+                DensityFunctionUtil.deepClone(this.shiftZ, cloneCache),
                 this.xzScale,
                 this.yScale,
                 noise

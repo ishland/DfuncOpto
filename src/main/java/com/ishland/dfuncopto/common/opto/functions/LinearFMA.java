@@ -2,6 +2,7 @@ package com.ishland.dfuncopto.common.opto.functions;
 
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.util.dynamic.CodecHolder;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 
@@ -49,8 +50,8 @@ public final class LinearFMA implements IDensityFunction<LinearFMA>, DensityFunc
     }
 
     @Override
-    public LinearFMA dfuncopto$deepClone() {
-        return new LinearFMA(DensityFunctionUtil.deepClone(input), minValue, maxValue, mul, add);
+    public LinearFMA dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
+        return new LinearFMA(DensityFunctionUtil.deepClone(input, cloneCache), minValue, maxValue, mul, add);
     }
 
     @Override

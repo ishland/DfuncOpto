@@ -1,6 +1,7 @@
 package com.ishland.dfuncopto.mixin.dfts;
 
 import com.ishland.dfuncopto.common.IDensityFunction;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
@@ -16,7 +17,7 @@ public class MixinDFTRegistryEntryHolder implements IDensityFunction<DensityFunc
     @Shadow @Final private RegistryEntry<DensityFunction> function;
 
     @Override
-    public DensityFunctionTypes.RegistryEntryHolder dfuncopto$deepClone() {
+    public DensityFunctionTypes.RegistryEntryHolder dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
         return new DensityFunctionTypes.RegistryEntryHolder(this.function);
     }
 

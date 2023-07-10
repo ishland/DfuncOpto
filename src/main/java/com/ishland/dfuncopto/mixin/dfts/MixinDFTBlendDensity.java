@@ -2,6 +2,7 @@ package com.ishland.dfuncopto.mixin.dfts;
 
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 import org.spongepowered.asm.mixin.Final;
@@ -17,8 +18,8 @@ public class MixinDFTBlendDensity implements IDensityFunction<DensityFunctionTyp
     @Shadow @Final private DensityFunction input;
 
     @Override
-    public DensityFunctionTypes.BlendDensity dfuncopto$deepClone() {
-        return new DensityFunctionTypes.BlendDensity(DensityFunctionUtil.deepClone(this.input));
+    public DensityFunctionTypes.BlendDensity dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
+        return new DensityFunctionTypes.BlendDensity(DensityFunctionUtil.deepClone(this.input, cloneCache));
     }
 
     @Override

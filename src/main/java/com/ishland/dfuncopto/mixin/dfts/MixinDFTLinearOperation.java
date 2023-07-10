@@ -2,6 +2,7 @@ package com.ishland.dfuncopto.mixin.dfts;
 
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 import org.spongepowered.asm.mixin.Final;
@@ -24,8 +25,8 @@ public abstract class MixinDFTLinearOperation implements IDensityFunction<Densit
     @Shadow @Final private double argument;
 
     @Override
-    public DensityFunctionTypes.LinearOperation dfuncopto$deepClone() {
-        return new DensityFunctionTypes.LinearOperation(this.specificType, DensityFunctionUtil.deepClone(this.input), this.minValue, this.maxValue, this.argument);
+    public DensityFunctionTypes.LinearOperation dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
+        return new DensityFunctionTypes.LinearOperation(this.specificType, DensityFunctionUtil.deepClone(this.input, cloneCache), this.minValue, this.maxValue, this.argument);
     }
 
     @Override

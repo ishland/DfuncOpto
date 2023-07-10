@@ -2,6 +2,7 @@ package com.ishland.dfuncopto.mixin.dfts;
 
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 import org.spongepowered.asm.mixin.Final;
@@ -21,8 +22,8 @@ public class MixinDFTWeirdScaledSampler implements IDensityFunction<DensityFunct
     @Shadow @Final private DensityFunctionTypes.WeirdScaledSampler.RarityValueMapper rarityValueMapper;
 
     @Override
-    public DensityFunctionTypes.WeirdScaledSampler dfuncopto$deepClone() {
-        return new DensityFunctionTypes.WeirdScaledSampler(DensityFunctionUtil.deepClone(this.input), this.noise, this.rarityValueMapper);
+    public DensityFunctionTypes.WeirdScaledSampler dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
+        return new DensityFunctionTypes.WeirdScaledSampler(DensityFunctionUtil.deepClone(this.input, cloneCache), this.noise, this.rarityValueMapper);
     }
 
     @Override

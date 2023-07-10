@@ -6,6 +6,7 @@ import com.ishland.dfuncopto.common.opto.FoldConstants;
 import com.ishland.dfuncopto.common.opto.InlineHolders;
 import com.ishland.dfuncopto.common.opto.InstCombine;
 import com.ishland.dfuncopto.common.opto.NormalizeTree;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 
 import java.util.function.Function;
@@ -14,7 +15,8 @@ public class OptoTransformation {
 
     public static DensityFunction copyAndOptimize(String name, DensityFunction df) {
         final long id = DotExporter.ID.incrementAndGet();
-        final DensityFunction copy = DensityFunctionUtil.deepClone(df);
+        Reference2ReferenceOpenHashMap<DensityFunction, DensityFunction> cloneCache = new Reference2ReferenceOpenHashMap<>();
+        final DensityFunction copy = DensityFunctionUtil.deepClone(df, cloneCache);
         DotExporter.writeToDisk(id + "-" + name + "-before", copy);
         final DensityFunction optimized = optimize(name, copy,
                 InlineHolders::inline,
@@ -25,12 +27,6 @@ public class OptoTransformation {
         );
         DotExporter.writeToDisk(id + "-" + name + "-after", optimized);
         return optimized;
-    }
-
-    @SafeVarargs
-    public static DensityFunction copyAndOptimize(String name, DensityFunction df, Function<DensityFunction, DensityFunction>... visitors) {
-        final DensityFunction densityFunction = DensityFunctionUtil.deepClone(df);
-        return optimize(name, densityFunction, visitors);
     }
 
     @SafeVarargs
