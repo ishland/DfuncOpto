@@ -102,7 +102,6 @@ public class OptoTransformation {
     }
 
     private static boolean attemptDeduplication(ObjectSet<NodeAndItsParent> nodes) {
-        // all nodes here have the same distance to leaf
         for (NodeAndItsParent node1 : nodes) {
             for (NodeAndItsParent node2 : nodes) {
                 if (node1 == node2) continue;
