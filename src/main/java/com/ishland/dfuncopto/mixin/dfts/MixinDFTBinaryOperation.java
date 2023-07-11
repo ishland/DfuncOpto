@@ -1,5 +1,6 @@
 package com.ishland.dfuncopto.mixin.dfts;
 
+import com.ishland.dfuncopto.common.DFCacheControl;
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
 import com.ishland.dfuncopto.common.SharedConstants;
@@ -11,9 +12,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(DensityFunctionTypes.BinaryOperation.class)
-public class MixinDFTBinaryOperation implements IDensityFunction<DensityFunctionTypes.BinaryOperation> {
+public class MixinDFTBinaryOperation implements IDensityFunction<DensityFunctionTypes.BinaryOperation>, DFCacheControl {
     @Mutable
     @Shadow @Final private DensityFunction argument1;
 
@@ -22,19 +26,43 @@ public class MixinDFTBinaryOperation implements IDensityFunction<DensityFunction
 
     @Shadow @Final private DensityFunctionTypes.BinaryOperationLike.Type type;
 
+    @Mutable
     @Shadow @Final private double minValue;
 
+    @Mutable
     @Shadow @Final private double maxValue;
 
     @Override
     public DensityFunctionTypes.BinaryOperation dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
-        return new DensityFunctionTypes.BinaryOperation(
+        final DensityFunctionTypes.BinaryOperation copy = new DensityFunctionTypes.BinaryOperation(
                 this.type,
                 DensityFunctionUtil.deepClone(this.argument1, cloneCache),
                 DensityFunctionUtil.deepClone(this.argument2, cloneCache),
                 this.minValue,
                 this.maxValue
         );
+        ((DFCacheControl) (Object) copy).dfuncopto$refreshMinMaxCache();
+        return copy;
+    }
+
+    private boolean dfuncopto$cacheDisabled = false;
+
+    @Inject(method = {"minValue", "maxValue"}, at = @At("HEAD"))
+    private void dfuncopto$beforeReadMinMax(CallbackInfoReturnable<Double> cir) {
+        if (!dfuncopto$cacheDisabled) return;
+        dfuncopto$refreshMinMaxCache();
+    }
+
+    @Override
+    public void dfuncopto$setMinMaxCachingDisabled(boolean disabled) {
+        this.dfuncopto$cacheDisabled = disabled;
+    }
+
+    @Override
+    public void dfuncopto$refreshMinMaxCache() {
+        final DensityFunctionTypes.BinaryOperationLike recalc = DensityFunctionTypes.BinaryOperationLike.create(this.type, this.argument1, this.argument2);
+        this.minValue = recalc.minValue();
+        this.maxValue = recalc.maxValue();
     }
 
     @Override

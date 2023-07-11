@@ -11,6 +11,7 @@ import com.ishland.dfuncopto.common.opto.NormalizeTree;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 
 import java.util.Objects;
@@ -44,6 +45,14 @@ public class OptoTransformation {
         while (visitNodeReplacing(df, InlineHolders::inline)) {
             i++;
         }
+        ReferenceOpenHashSet<DFCacheControl> cacheControls = new ReferenceOpenHashSet<>();
+        visitNodeReplacing(df, densityFunction -> {
+            if (densityFunction instanceof DFCacheControl cacheControl) {
+                cacheControls.add(cacheControl);
+                cacheControl.dfuncopto$setMinMaxCachingDisabled(true);
+            }
+            return densityFunction;
+        });
         while (true) {
             boolean hasWork = false;
             final long deduplicateIterations = deduplicate(df);
@@ -56,6 +65,10 @@ public class OptoTransformation {
             if (!hasWork) {
                 break;
             }
+        }
+        for (DFCacheControl cacheControl : cacheControls) {
+            cacheControl.dfuncopto$refreshMinMaxCache();
+            cacheControl.dfuncopto$setMinMaxCachingDisabled(false);
         }
         stopwatch.stop();
         System.out.println(String.format("Optimization finished after %d iterations for %s after %s", i, name, stopwatch));

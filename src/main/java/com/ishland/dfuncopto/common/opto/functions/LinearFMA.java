@@ -1,5 +1,6 @@
 package com.ishland.dfuncopto.common.opto.functions;
 
+import com.ishland.dfuncopto.common.DFCacheControl;
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
 import com.ishland.dfuncopto.common.SharedConstants;
@@ -9,10 +10,10 @@ import net.minecraft.world.gen.densityfunction.DensityFunction;
 
 import java.util.Objects;
 
-public final class LinearFMA implements IDensityFunction<LinearFMA>, DensityFunction {
+public final class LinearFMA implements IDensityFunction<LinearFMA>, DFCacheControl, DensityFunction {
     private DensityFunction input;
-    private final double minValue;
-    private final double maxValue;
+    private double minValue;
+    private double maxValue;
     private final double mul;
     private final double add;
 
@@ -65,6 +66,35 @@ public final class LinearFMA implements IDensityFunction<LinearFMA>, DensityFunc
         return new LinearFMA(DensityFunctionUtil.deepClone(input, cloneCache), mul, add);
     }
 
+    private boolean dfuncopto$cacheDisabled = false;
+
+    private void dfuncopto$recalculateMinMax() {
+        if (!dfuncopto$cacheDisabled) return;
+        dfuncopto$refreshMinMaxCache();
+    }
+
+    @Override
+    public void dfuncopto$setMinMaxCachingDisabled(boolean disabled) {
+        this.dfuncopto$cacheDisabled = disabled;
+    }
+
+    public void dfuncopto$refreshMinMaxCache() {
+        minValue = input.minValue() * mul + add;
+        maxValue = input.maxValue() * mul + add;
+    }
+
+    @Override
+    public double minValue() {
+        dfuncopto$recalculateMinMax();
+        return minValue;
+    }
+
+    @Override
+    public double maxValue() {
+        dfuncopto$recalculateMinMax();
+        return maxValue;
+    }
+
     @Override
     public void dfuncopto$replace(DensityFunction original, DensityFunction replacement) {
         if (input == original) {
@@ -83,16 +113,6 @@ public final class LinearFMA implements IDensityFunction<LinearFMA>, DensityFunc
 
     public DensityFunction input() {
         return input;
-    }
-
-    @Override
-    public double minValue() {
-        return minValue;
-    }
-
-    @Override
-    public double maxValue() {
-        return maxValue;
     }
 
     public double mul() {

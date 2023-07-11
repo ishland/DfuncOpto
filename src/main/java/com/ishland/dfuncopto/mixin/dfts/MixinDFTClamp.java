@@ -4,6 +4,7 @@ import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
 import com.ishland.dfuncopto.common.SharedConstants;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 import org.spongepowered.asm.mixin.Final;
@@ -25,6 +26,24 @@ public class MixinDFTClamp implements IDensityFunction<DensityFunctionTypes.Clam
     @Override
     public DensityFunctionTypes.Clamp dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
         return new DensityFunctionTypes.Clamp(DensityFunctionUtil.deepClone(this.input, cloneCache), this.minValue, this.maxValue);
+    }
+
+    /**
+     * @author ishland
+     * @reason use actual value
+     */
+    @Overwrite
+    public double minValue() {
+        return MathHelper.clamp(this.input.minValue(), this.minValue, this.maxValue);
+    }
+
+    /**
+     * @author ishland
+     * @reason use actual value
+     */
+    @Overwrite
+    public double maxValue() {
+        return MathHelper.clamp(this.input.maxValue(), this.minValue, this.maxValue);
     }
 
     @Override
