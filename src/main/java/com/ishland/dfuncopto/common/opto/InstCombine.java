@@ -11,13 +11,15 @@ public class InstCombine {
             // Combine two additions, constant should always be arg1
             if (operation.argument2() instanceof DensityFunctionTypes.LinearOperation inner) {
                 if (inner.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.ADD && operation.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.ADD) {
-                    return new DensityFunctionTypes.LinearOperation(DensityFunctionTypes.LinearOperation.SpecificType.ADD, inner.argument2(), operation.minValue(), operation.maxValue(), operation.argument() + inner.argument());
+//                    return new DensityFunctionTypes.LinearOperation(DensityFunctionTypes.LinearOperation.SpecificType.ADD, inner.argument2(), operation.minValue(), operation.maxValue(), operation.argument() + inner.argument());
+                    return DensityFunctionTypes.BinaryOperationLike.create(DensityFunctionTypes.BinaryOperationLike.Type.ADD, inner.argument2(), new DensityFunctionTypes.Constant(operation.argument() + inner.argument()));
                 }
                 if (inner.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.MUL && operation.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.MUL) {
-                    return new DensityFunctionTypes.LinearOperation(DensityFunctionTypes.LinearOperation.SpecificType.MUL, inner.argument2(), operation.minValue(), operation.maxValue(), operation.argument() * inner.argument());
+//                    return new DensityFunctionTypes.LinearOperation(DensityFunctionTypes.LinearOperation.SpecificType.MUL, inner.argument2(), operation.minValue(), operation.maxValue(), operation.argument() * inner.argument());
+                    return DensityFunctionTypes.BinaryOperationLike.create(DensityFunctionTypes.BinaryOperationLike.Type.MUL, inner.argument2(), new DensityFunctionTypes.Constant(operation.argument() * inner.argument()));
                 }
                 if (inner.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.MUL && operation.specificType() == DensityFunctionTypes.LinearOperation.SpecificType.ADD) {
-                    return new LinearFMA(inner.argument2(), operation.minValue(), operation.maxValue(), inner.argument(), operation.argument());
+                    return new LinearFMA(inner.argument2(), inner.argument(), operation.argument());
                 }
             }
         }

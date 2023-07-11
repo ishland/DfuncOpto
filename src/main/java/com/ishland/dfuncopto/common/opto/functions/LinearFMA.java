@@ -16,12 +16,12 @@ public final class LinearFMA implements IDensityFunction<LinearFMA>, DensityFunc
     private final double mul;
     private final double add;
 
-    public LinearFMA(DensityFunction input, double minValue, double maxValue, double mul, double add) {
+    public LinearFMA(DensityFunction input, double mul, double add) {
         this.input = input;
-        this.minValue = minValue;
-        this.maxValue = maxValue;
         this.mul = mul;
         this.add = add;
+        this.minValue = input.minValue() * mul + add;
+        this.maxValue = input.maxValue() * mul + add;
     }
 
     @Override
@@ -52,7 +52,7 @@ public final class LinearFMA implements IDensityFunction<LinearFMA>, DensityFunc
         final DensityFunction apply = this.input.apply(visitor);
         if (apply == this.input) return visitor.apply(this);
         // recalculate min max
-        return visitor.apply(new LinearFMA(apply, Math.fma(apply.minValue(), mul, add), Math.fma(apply.maxValue(), mul, add), mul, add));
+        return visitor.apply(new LinearFMA(apply, mul, add));
     }
 
     @Override
@@ -62,7 +62,7 @@ public final class LinearFMA implements IDensityFunction<LinearFMA>, DensityFunc
 
     @Override
     public LinearFMA dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
-        return new LinearFMA(DensityFunctionUtil.deepClone(input, cloneCache), minValue, maxValue, mul, add);
+        return new LinearFMA(DensityFunctionUtil.deepClone(input, cloneCache), mul, add);
     }
 
     @Override

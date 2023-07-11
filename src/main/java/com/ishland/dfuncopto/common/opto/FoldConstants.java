@@ -59,10 +59,12 @@ public class FoldConstants {
         if (df instanceof LinearFMA op) {
             // elimination
             if (op.add() == 0) {
-                return new DensityFunctionTypes.LinearOperation(DensityFunctionTypes.LinearOperation.SpecificType.MUL, op.input(), op.minValue(), op.maxValue(), op.mul());
+//                return new DensityFunctionTypes.LinearOperation(DensityFunctionTypes.LinearOperation.SpecificType.MUL, op.input(), op.minValue(), op.maxValue(), op.mul());
+                return DensityFunctionTypes.BinaryOperationLike.create(DensityFunctionTypes.BinaryOperationLike.Type.MUL, op.input(), new DensityFunctionTypes.Constant(op.mul()));
             }
             if (op.mul() == 1) {
-                return new DensityFunctionTypes.LinearOperation(DensityFunctionTypes.LinearOperation.SpecificType.ADD, op.input(), op.minValue(), op.maxValue(), op.add());
+//                return new DensityFunctionTypes.LinearOperation(DensityFunctionTypes.LinearOperation.SpecificType.ADD, op.input(), op.minValue(), op.maxValue(), op.add());
+                return DensityFunctionTypes.BinaryOperationLike.create(DensityFunctionTypes.BinaryOperationLike.Type.ADD, op.input(), new DensityFunctionTypes.Constant(op.add()));
             }
             if (op.mul() == 0) {
                 return new DensityFunctionTypes.Constant(op.add());
