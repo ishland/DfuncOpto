@@ -19,7 +19,6 @@ import java.util.function.Function;
 public class OptoTransformation {
 
     public static DensityFunction copyAndOptimize(String name, DensityFunction df) {
-        if (true) return df;
         final long id = DotExporter.ID.incrementAndGet();
         Reference2ReferenceOpenHashMap<DensityFunction, DensityFunction> cloneCache = new Reference2ReferenceOpenHashMap<>();
         final DensityFunction copy = DensityFunctionUtil.deepClone(df, cloneCache);
