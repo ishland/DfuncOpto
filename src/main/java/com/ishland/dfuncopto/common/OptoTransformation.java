@@ -2,6 +2,7 @@ package com.ishland.dfuncopto.common;
 
 import com.google.common.base.Stopwatch;
 import com.ishland.dfuncopto.common.debug.DotExporter;
+import com.ishland.dfuncopto.common.opto.BranchElimination;
 import com.ishland.dfuncopto.common.opto.BreakBlending;
 import com.ishland.dfuncopto.common.opto.FoldConstants;
 import com.ishland.dfuncopto.common.opto.InlineHolders;
@@ -18,6 +19,7 @@ import java.util.function.Function;
 public class OptoTransformation {
 
     public static DensityFunction copyAndOptimize(String name, DensityFunction df) {
+        if (true) return df;
         final long id = DotExporter.ID.incrementAndGet();
         Reference2ReferenceOpenHashMap<DensityFunction, DensityFunction> cloneCache = new Reference2ReferenceOpenHashMap<>();
         final DensityFunction copy = DensityFunctionUtil.deepClone(df, cloneCache);
@@ -26,21 +28,35 @@ public class OptoTransformation {
                 InlineHolders::inline,
                 BreakBlending::breakBlending,
                 FoldConstants::fold,
+                BranchElimination::eliminate,
                 NormalizeTree::normalize,
                 InstCombine::combine
         );
         DotExporter.writeToDisk(id + "-" + name + "-stage1", copy);
-        deduplicate(optimized);
-        DotExporter.writeToDisk(id + "-" + name + "-stage2", optimized);
+//        deduplicate(optimized);
+//        DotExporter.writeToDisk(id + "-" + name + "-stage2", optimized);
         return optimized;
     }
 
     @SafeVarargs
     private static DensityFunction optimize(String name, DensityFunction df, Function<DensityFunction, DensityFunction>... visitors) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        int i = 0;
-        while (visitNodeReplacing(df, visitors)) {
+        long i = 0;
+        while (visitNodeReplacing(df, InlineHolders::inline)) {
             i++;
+        }
+        while (true) {
+            boolean hasWork = false;
+            final long deduplicateIterations = deduplicate(df);
+            i += deduplicateIterations;
+            hasWork |= deduplicateIterations > 0;
+            while (visitNodeReplacing(df, visitors)) {
+                hasWork = true;
+                i++;
+            }
+            if (!hasWork) {
+                break;
+            }
         }
         stopwatch.stop();
         System.out.println(String.format("Optimization finished after %d iterations for %s after %s", i, name, stopwatch));
@@ -54,7 +70,7 @@ public class OptoTransformation {
      * @param visitors The visitors
      * @return Whether a replacement is found
      */
-    private static boolean visitNodeReplacing(DensityFunction df, Function<DensityFunction, DensityFunction>[] visitors) {
+    private static boolean visitNodeReplacing(DensityFunction df, Function<DensityFunction, DensityFunction>... visitors) {
         if (df instanceof IDensityFunction<?> idf) {
             final DensityFunction[] children = idf.dfuncopto$getChildren();
             for (int i = 0; i < children.length; i++) {
@@ -77,18 +93,19 @@ public class OptoTransformation {
         return false;
     }
 
-    private static void deduplicate(DensityFunction df) {
-        Stopwatch stopwatch = Stopwatch.createStarted();
+    private static long deduplicate(DensityFunction df) {
+//        Stopwatch stopwatch = Stopwatch.createStarted();
         // map: distance from leaf -> set of nodes
         // a single node can be with multiple different distances
         ObjectSet<NodeAndItsParent> set = new ObjectOpenHashSet<>();
         populateNodeAndItsParent(df, set);
-        int count = 0;
+        long count = 0;
         while (attemptDeduplication(set)) {
             count ++;
         }
-        stopwatch.stop();
-        System.out.println(String.format("Deduplication finished after %d iterations after %s", count, stopwatch));
+//        stopwatch.stop();
+//        System.out.println(String.format("Deduplication finished after %d iterations after %s", count, stopwatch));
+        return count;
     }
 
     private static void populateNodeAndItsParent(DensityFunction current, ObjectSet<NodeAndItsParent> set) {

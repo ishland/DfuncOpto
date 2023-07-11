@@ -24,7 +24,7 @@ public class MixinDFTRegistryEntryHolder implements IDensityFunction<DensityFunc
 
     @Override
     public void dfuncopto$replace(DensityFunction original, DensityFunction replacement) {
-        if (this.function == original) {
+        if (this.function.value() == original) {
             this.function = new RegistryEntry.Direct<>(replacement);
         } else {
             throw new IllegalArgumentException(SharedConstants.INVALID_ORIGINAL_DFUNC);
