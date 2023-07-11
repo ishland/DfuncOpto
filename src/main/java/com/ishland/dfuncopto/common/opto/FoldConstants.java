@@ -67,6 +67,11 @@ public class FoldConstants {
             if (op.mul() == 0) {
                 return new DensityFunctionTypes.Constant(op.add());
             }
+
+            // fold constants
+            if (op.input() instanceof DensityFunctionTypes.Constant constant) {
+                return new DensityFunctionTypes.Constant(constant.value() * op.mul() + op.add());
+            }
         }
 
         return df;
