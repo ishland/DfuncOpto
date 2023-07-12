@@ -55,9 +55,22 @@ public abstract class MixinDFTLinearOperation implements IDensityFunction<Densit
 
     @Override
     public void dfuncopto$refreshMinMaxCache() {
-        final DensityFunctionTypes.BinaryOperationLike recalc = DensityFunctionTypes.BinaryOperationLike.create(this.type(), this.input, new DensityFunctionTypes.Constant(this.argument));
-        this.minValue = recalc.minValue();
-        this.maxValue = recalc.maxValue();
+        final double inputMin = this.input.minValue();
+        final double inputMax = this.input.maxValue();
+        double min;
+        double max;
+        if (this.specificType == DensityFunctionTypes.LinearOperation.SpecificType.ADD) {
+            min = inputMin + this.argument;
+            max = inputMax + this.argument;
+        } else if (this.argument >= 0.0) {
+            min = inputMin * this.argument;
+            max = inputMax * this.argument;
+        } else {
+            min = inputMax * this.argument;
+            max = inputMin * this.argument;
+        }
+        this.minValue = min;
+        this.maxValue = max;
     }
 
     @Override
@@ -86,22 +99,10 @@ public abstract class MixinDFTLinearOperation implements IDensityFunction<Densit
         if (densityFunction == this.input) {
             return visitor.apply((DensityFunction) this);
         }
-        double d = densityFunction.minValue();
-        double e = densityFunction.maxValue();
-        double f;
-        double g;
-        if (this.specificType == DensityFunctionTypes.LinearOperation.SpecificType.ADD) {
-            f = d + this.argument;
-            g = e + this.argument;
-        } else if (this.argument >= 0.0) {
-            f = d * this.argument;
-            g = e * this.argument;
-        } else {
-            f = e * this.argument;
-            g = d * this.argument;
-        }
 
-        return new DensityFunctionTypes.LinearOperation(this.specificType, densityFunction, f, g, this.argument);
+        final DensityFunctionTypes.LinearOperation operation = new DensityFunctionTypes.LinearOperation(this.specificType, densityFunction, 0, 0, this.argument);
+        ((DFCacheControl) (Object) operation).dfuncopto$refreshMinMaxCache();
+        return operation;
     }
 
     @Override

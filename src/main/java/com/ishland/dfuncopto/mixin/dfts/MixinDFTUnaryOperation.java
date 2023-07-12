@@ -64,9 +64,6 @@ public class MixinDFTUnaryOperation implements IDensityFunction<DensityFunctionT
         } else {
             throw new IllegalArgumentException(SharedConstants.INVALID_ORIGINAL_DFUNC);
         }
-        if (original.minValue() != replacement.minValue() || original.maxValue() != replacement.maxValue()) {
-            dfuncopto$refreshMinMaxCache();
-        }
     }
 
     @Override

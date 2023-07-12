@@ -60,9 +60,36 @@ public class MixinDFTBinaryOperation implements IDensityFunction<DensityFunction
 
     @Override
     public void dfuncopto$refreshMinMaxCache() {
-        final DensityFunctionTypes.BinaryOperationLike recalc = DensityFunctionTypes.BinaryOperationLike.create(this.type, this.argument1, this.argument2);
-        this.minValue = recalc.minValue();
-        this.maxValue = recalc.maxValue();
+//        final DensityFunctionTypes.BinaryOperationLike recalc = DensityFunctionTypes.BinaryOperationLike.create(this.type, this.argument1, this.argument2);
+//        this.minValue = recalc.minValue();
+//        this.maxValue = recalc.maxValue();
+//        ((DFCacheControl) this.argument1).dfuncopto$refreshMinMaxCache();
+//        ((DFCacheControl) this.argument2).dfuncopto$refreshMinMaxCache();
+//        try {
+//            ((DFCacheControl) this.argument1).dfuncopto$setMinMaxCachingDisabled(false);
+//            ((DFCacheControl) this.argument2).dfuncopto$setMinMaxCachingDisabled(false);
+//
+//        } finally {
+//            ((DFCacheControl) this.argument1).dfuncopto$setMinMaxCachingDisabled(true);
+//            ((DFCacheControl) this.argument2).dfuncopto$setMinMaxCachingDisabled(true);
+//        }
+        final double arg1min = this.argument1.minValue();
+        final double arg2min = this.argument2.minValue();
+        final double arg1max = this.argument1.maxValue();
+        final double arg2max = this.argument2.maxValue();
+        this.minValue = switch (this.type) {
+            case ADD -> arg1min + arg2min;
+            case MAX -> Math.max(arg1min, arg2min);
+            case MIN -> Math.min(arg1min, arg2min);
+            case MUL -> arg1min > 0.0 && arg2min > 0.0 ? arg1min * arg2min : (arg1max < 0.0 && arg2max < 0.0 ? arg1max * arg2max : Math.min(arg1min * arg2max, arg1max * arg2min));
+        };
+        this.maxValue = switch (this.type) {
+            case ADD -> arg1max + arg2max;
+            case MAX -> Math.max(arg1max, arg2max);
+            case MIN -> Math.min(arg1max, arg2max);
+            case MUL -> arg1min > 0.0 && arg2min > 0.0 ? arg1max * arg2max : (arg1max < 0.0 && arg2max < 0.0 ? arg1min * arg2min : Math.max(arg1min * arg2min, arg1max * arg2max));
+        };
+
     }
 
     @Override
