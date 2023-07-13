@@ -15,6 +15,29 @@ public class BranchElimination {
             if (op.whenInRange() == op.whenOutOfRange()) {
                 return op.whenInRange();
             }
+            {
+                DFCacheControl cacheControl = op.input() instanceof DFCacheControl ctrl ? ctrl : null;
+                double minValue;
+                double maxValue;
+                try {
+                    if (cacheControl != null) {
+                        cacheControl.dfuncopto$refreshMinMaxCache();
+                        cacheControl.dfuncopto$setMinMaxCachingDisabled(false);
+                    }
+                    minValue = op.input().minValue();
+                    maxValue = op.input().maxValue();
+                } finally {
+                    if (cacheControl != null) {
+                        cacheControl.dfuncopto$setMinMaxCachingDisabled(true);
+                    }
+                }
+                if (minValue >= op.minInclusive() && maxValue < op.maxExclusive()) {
+                    return op.whenInRange();
+                }
+                if (minValue >= op.maxExclusive() || maxValue < op.minInclusive()) {
+                    return op.whenOutOfRange();
+                }
+            }
         }
 
         if (df instanceof DensityFunctionTypes.BinaryOperation op) {
