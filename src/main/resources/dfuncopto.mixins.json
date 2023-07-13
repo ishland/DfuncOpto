@@ -20,7 +20,8 @@
 		"dfts.MixinDFTSpline",
 		"dfts.MixinDFTUnaryOperation",
 		"dfts.MixinDFTWeirdScaledSampler",
-		"dfts.MixinDFTWrapping"
+		"dfts.MixinDFTWrapping",
+		"test.MixinServerMain"
 	],
 	"injectors": {
 		"defaultRequire": 1
