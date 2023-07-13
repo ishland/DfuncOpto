@@ -1,5 +1,6 @@
 package com.ishland.dfuncopto.common.opto;
 
+import com.ishland.dfuncopto.common.DFCacheControl;
 import com.ishland.dfuncopto.common.opto.functions.LinearFMA;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
@@ -71,6 +72,38 @@ public class FoldConstants {
             // fold constants
             if (op.input() instanceof DensityFunctionTypes.Constant constant) {
                 return new DensityFunctionTypes.Constant(constant.value() * op.mul() + op.add());
+            }
+        }
+
+        if (df instanceof DensityFunctionTypes.UnaryOperation op) {
+            // fold constants
+            if (op.input() instanceof DensityFunctionTypes.Constant constant) {
+                return new DensityFunctionTypes.Constant(op.apply(constant.value()));
+            }
+
+            if (op.input() instanceof DensityFunctionTypes.UnaryOperation inner) {
+                if (inner.type() == DensityFunctionTypes.UnaryOperation.Type.ABS) {
+                    if (op.type() == DensityFunctionTypes.UnaryOperation.Type.ABS) {
+                        return inner; // abs(abs(x)) = abs(x)
+                    }
+                    if (op.type() == DensityFunctionTypes.UnaryOperation.Type.SQUARE /* abs(x) * abs(x) = x * x */ ||
+                        op.type() == DensityFunctionTypes.UnaryOperation.Type.HALF_NEGATIVE /* no negative exists */ ||
+                        op.type() == DensityFunctionTypes.UnaryOperation.Type.QUARTER_NEGATIVE /* no negative exists */) {
+                        final DFCacheControl cacheControl = (DFCacheControl) (Object) op;
+                        try {
+                            cacheControl.dfuncopto$refreshMinMaxCache();
+                            cacheControl.dfuncopto$setMinMaxCachingDisabled(false);
+                            return new DensityFunctionTypes.UnaryOperation(op.type(), inner.input(), op.minValue(), op.maxValue());
+                        } finally {
+                            cacheControl.dfuncopto$setMinMaxCachingDisabled(true);
+                        }
+                    }
+                }
+                if (inner.type() == DensityFunctionTypes.UnaryOperation.Type.SQUARE) {
+                    if (op.type() == DensityFunctionTypes.UnaryOperation.Type.ABS) {
+                        return inner; // abs(x * x) = x * x
+                    }
+                }
             }
         }
 
