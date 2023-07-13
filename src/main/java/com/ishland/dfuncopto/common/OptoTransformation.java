@@ -46,14 +46,9 @@ public class OptoTransformation {
         Stopwatch stopwatch = Stopwatch.createStarted();
         long i = 0;
         while (visitNodeReplacing(df, InlineHolders::inline)) {
+            df = runApply(df);
             i++;
         }
-        visitNodeReplacing(df, densityFunction -> {
-            if (densityFunction instanceof DFCacheControl cacheControl) {
-                cacheControl.dfuncopto$setMinMaxCachingDisabled(true);
-            }
-            return densityFunction;
-        });
         while (true) {
             boolean hasWork = false;
             final long deduplicateIterations = deduplicate(df);
@@ -61,21 +56,20 @@ public class OptoTransformation {
             hasWork |= deduplicateIterations > 0;
             while (visitNodeReplacing(df, visitors)) {
                 hasWork = true;
+                df = runApply(df);
                 i++;
             }
             if (!hasWork) {
                 break;
             }
         }
-        visitNodeReplacing(df, densityFunction -> {
-            if (densityFunction instanceof DFCacheControl cacheControl) {
-                cacheControl.dfuncopto$setMinMaxCachingDisabled(false);
-            }
-            return densityFunction;
-        });
         stopwatch.stop();
         System.out.println(String.format("Optimization finished after %d iterations for %s after %s", i, name, stopwatch));
         return df;
+    }
+
+    private static DensityFunction runApply(DensityFunction df) {
+        return df.apply(densityFunction -> densityFunction);
     }
 
     /**
@@ -85,6 +79,7 @@ public class OptoTransformation {
      * @param visitors The visitors
      * @return Whether a replacement is found
      */
+    @SafeVarargs
     private static boolean visitNodeReplacing(DensityFunction df, Function<DensityFunction, DensityFunction>... visitors) {
         if (df instanceof IDensityFunction<?> idf) {
             final DensityFunction[] children = idf.dfuncopto$getChildren();
@@ -95,8 +90,6 @@ public class OptoTransformation {
                     if (apply != null && apply != child) {
 //                        System.out.println(String.format("Replacing %s", child));
 //                        System.out.println(String.format("With %s", apply));
-                        if (apply instanceof DFCacheControl cacheControl)
-                            cacheControl.dfuncopto$setMinMaxCachingDisabled(true);
                         idf.dfuncopto$replace(child, apply);
                         return true;
                     }

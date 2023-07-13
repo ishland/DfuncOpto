@@ -1,6 +1,5 @@
 package com.ishland.dfuncopto.mixin.dfts;
 
-import com.ishland.dfuncopto.common.DFCacheControl;
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
 import com.ishland.dfuncopto.common.SharedConstants;
@@ -12,21 +11,16 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(DensityFunctionTypes.LinearOperation.class)
-public abstract class MixinDFTLinearOperation implements IDensityFunction<DensityFunctionTypes.LinearOperation>, DFCacheControl, DensityFunctionTypes.Unary, DensityFunctionTypes.BinaryOperationLike {
+public abstract class MixinDFTLinearOperation implements IDensityFunction<DensityFunctionTypes.LinearOperation>, DensityFunctionTypes.Unary, DensityFunctionTypes.BinaryOperationLike {
     @Shadow @Final private DensityFunctionTypes.LinearOperation.SpecificType specificType;
 
     @Mutable
     @Shadow @Final private DensityFunction input;
 
-    @Mutable
     @Shadow @Final private double minValue;
 
-    @Mutable
     @Shadow @Final private double maxValue;
 
     @Shadow @Final private double argument;
@@ -36,42 +30,10 @@ public abstract class MixinDFTLinearOperation implements IDensityFunction<Densit
     @Override
     public DensityFunctionTypes.LinearOperation dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
         final DensityFunctionTypes.LinearOperation copy = new DensityFunctionTypes.LinearOperation(this.specificType, DensityFunctionUtil.deepClone(this.input, cloneCache), this.minValue, this.maxValue, this.argument);
-//        ((DFCacheControl) (Object) copy).dfuncopto$refreshMinMaxCache();
         return copy;
     }
 
-    private boolean dfuncopto$cacheDisabled = false;
-
-    @Inject(method = {"minValue", "maxValue"}, at = @At("HEAD"))
-    private void dfuncopto$beforeReadMinMax(CallbackInfoReturnable<Double> cir) {
-        if (!dfuncopto$cacheDisabled) return;
-        dfuncopto$refreshMinMaxCache();
-    }
-
-    @Override
-    public void dfuncopto$setMinMaxCachingDisabled(boolean disabled) {
-        this.dfuncopto$cacheDisabled = disabled;
-    }
-
-    @Override
-    public void dfuncopto$refreshMinMaxCache() {
-        final double inputMin = this.input.minValue();
-        final double inputMax = this.input.maxValue();
-        double min;
-        double max;
-        if (this.specificType == DensityFunctionTypes.LinearOperation.SpecificType.ADD) {
-            min = inputMin + this.argument;
-            max = inputMax + this.argument;
-        } else if (this.argument >= 0.0) {
-            min = inputMin * this.argument;
-            max = inputMax * this.argument;
-        } else {
-            min = inputMax * this.argument;
-            max = inputMin * this.argument;
-        }
-        this.minValue = min;
-        this.maxValue = max;
-    }
+    private boolean dfuncopto$isMinMaxDirty = false;
 
     @Override
     public void dfuncopto$replace(DensityFunction original, DensityFunction replacement) {
@@ -79,6 +41,9 @@ public abstract class MixinDFTLinearOperation implements IDensityFunction<Densit
             this.input = replacement;
         } else {
             throw new IllegalArgumentException(SharedConstants.INVALID_ORIGINAL_DFUNC);
+        }
+        if (original.minValue() != replacement.minValue() && original.maxValue() != replacement.maxValue()) {
+            this.dfuncopto$isMinMaxDirty = true;
         }
     }
 
@@ -96,13 +61,24 @@ public abstract class MixinDFTLinearOperation implements IDensityFunction<Densit
     @Overwrite
     public DensityFunction apply(DensityFunction.DensityFunctionVisitor visitor) {
         DensityFunction densityFunction = this.input.apply(visitor);
-        if (densityFunction == this.input) {
+        if (!dfuncopto$isMinMaxDirty && densityFunction == this.input) {
             return visitor.apply((DensityFunction) this);
         }
 
-        final DensityFunctionTypes.LinearOperation operation = new DensityFunctionTypes.LinearOperation(this.specificType, densityFunction, 0, 0, this.argument);
-        ((DFCacheControl) (Object) operation).dfuncopto$refreshMinMaxCache();
-        return operation;
+        double newMin;
+        double newMax;
+        if (this.specificType == DensityFunctionTypes.LinearOperation.SpecificType.ADD) {
+            newMin = densityFunction.minValue() + this.argument;
+            newMax = densityFunction.maxValue() + this.argument;
+        } else if (this.argument >= 0.0) {
+            newMin = densityFunction.minValue() * this.argument;
+            newMax = densityFunction.maxValue() * this.argument;
+        } else {
+            newMin = densityFunction.maxValue() * this.argument;
+            newMax = densityFunction.minValue() * this.argument;
+        }
+
+        return new DensityFunctionTypes.LinearOperation(this.specificType, densityFunction, newMin, newMax, this.argument);
     }
 
     @Override

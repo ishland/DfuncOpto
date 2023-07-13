@@ -41,20 +41,12 @@ public class MixinDFTRegistryEntryHolder implements IDensityFunction<DensityFunc
 
     /**
      * @author ishland
-     * @reason Reduce object allocation & shorten call chain
+     * @reason Reduce object allocation
      */
     @Overwrite
     public DensityFunction apply(DensityFunction.DensityFunctionVisitor visitor) {
         final DensityFunction apply = this.function.value().apply(visitor);
-        if (apply == this.function.value()) {
-            final DensityFunction apply1 = visitor.apply((DensityFunction) this);
-            if (apply1 == (Object) this) return this.function.value();
-            return apply1;
-        } else {
-            final DensityFunctionTypes.RegistryEntryHolder newf = new DensityFunctionTypes.RegistryEntryHolder(new RegistryEntry.Direct<>(apply));
-            final DensityFunction apply1 = visitor.apply(newf);
-            if (apply1 == newf) return apply;
-            return apply1;
-        }
+        if (apply == this.function.value()) return visitor.apply((DensityFunction) (Object) this);
+        return new DensityFunctionTypes.RegistryEntryHolder(new RegistryEntry.Direct<>(apply));
     }
 }

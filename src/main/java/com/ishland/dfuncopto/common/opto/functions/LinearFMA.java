@@ -1,6 +1,5 @@
 package com.ishland.dfuncopto.common.opto.functions;
 
-import com.ishland.dfuncopto.common.DFCacheControl;
 import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
 import com.ishland.dfuncopto.common.SharedConstants;
@@ -10,10 +9,10 @@ import net.minecraft.world.gen.densityfunction.DensityFunction;
 
 import java.util.Objects;
 
-public final class LinearFMA implements IDensityFunction<LinearFMA>, DFCacheControl, DensityFunction {
+public final class LinearFMA implements IDensityFunction<LinearFMA>, DensityFunction {
     private DensityFunction input;
-    private double minValue;
-    private double maxValue;
+    private final double minValue;
+    private final double maxValue;
     private final double mul;
     private final double add;
 
@@ -21,8 +20,10 @@ public final class LinearFMA implements IDensityFunction<LinearFMA>, DFCacheCont
         this.input = input;
         this.mul = mul;
         this.add = add;
-        this.minValue = input.minValue() * mul + add;
-        this.maxValue = input.maxValue() * mul + add;
+        final double v1 = input.minValue() * mul + add;
+        final double v2 = input.maxValue() * mul + add;
+        this.minValue = Math.min(v1, v2);
+        this.maxValue = Math.max(v1, v2);
     }
 
     @Override
@@ -49,14 +50,6 @@ public final class LinearFMA implements IDensityFunction<LinearFMA>, DFCacheCont
     }
 
     @Override
-    public DensityFunction apply(DensityFunctionVisitor visitor) {
-        final DensityFunction apply = this.input.apply(visitor);
-        if (apply == this.input) return visitor.apply(this);
-        // recalculate min max
-        return visitor.apply(new LinearFMA(apply, mul, add));
-    }
-
-    @Override
     public CodecHolder<? extends DensityFunction> getCodecHolder() {
         throw new UnsupportedOperationException();
     }
@@ -66,34 +59,17 @@ public final class LinearFMA implements IDensityFunction<LinearFMA>, DFCacheCont
         return new LinearFMA(DensityFunctionUtil.deepClone(input, cloneCache), mul, add);
     }
 
-    private boolean dfuncopto$cacheDisabled = false;
-
-    private void dfuncopto$recalculateMinMax() {
-        if (!dfuncopto$cacheDisabled) return;
-        dfuncopto$refreshMinMaxCache();
-    }
-
-    @Override
-    public void dfuncopto$setMinMaxCachingDisabled(boolean disabled) {
-        this.dfuncopto$cacheDisabled = disabled;
-    }
-
-    public void dfuncopto$refreshMinMaxCache() {
-        minValue = input.minValue() * mul + add;
-        maxValue = input.maxValue() * mul + add;
-    }
-
     @Override
     public double minValue() {
-        dfuncopto$recalculateMinMax();
         return minValue;
     }
 
     @Override
     public double maxValue() {
-        dfuncopto$recalculateMinMax();
         return maxValue;
     }
+
+    private boolean dfuncopto$isMinMaxDirty = false;
 
     @Override
     public void dfuncopto$replace(DensityFunction original, DensityFunction replacement) {
@@ -102,6 +78,17 @@ public final class LinearFMA implements IDensityFunction<LinearFMA>, DFCacheCont
         } else {
             throw new IllegalArgumentException("Original density function is not a child of this density function");
         }
+        if (original.minValue() != replacement.minValue() && original.maxValue() != replacement.maxValue()) {
+            this.dfuncopto$isMinMaxDirty = true;
+        }
+    }
+
+    @Override
+    public DensityFunction apply(DensityFunctionVisitor visitor) {
+        final DensityFunction apply = this.input.apply(visitor);
+        if (!dfuncopto$isMinMaxDirty && apply == this.input) return visitor.apply(this);
+        // recalculate min max
+        return visitor.apply(new LinearFMA(apply, mul, add));
     }
 
     @Override

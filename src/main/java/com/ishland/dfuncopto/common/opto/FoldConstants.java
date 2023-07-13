@@ -1,6 +1,5 @@
 package com.ishland.dfuncopto.common.opto;
 
-import com.ishland.dfuncopto.common.DFCacheControl;
 import com.ishland.dfuncopto.common.opto.functions.LinearFMA;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
@@ -93,14 +92,7 @@ public class FoldConstants {
                     if (op.type() == DensityFunctionTypes.UnaryOperation.Type.SQUARE /* abs(x) * abs(x) = x * x */ ||
                         op.type() == DensityFunctionTypes.UnaryOperation.Type.HALF_NEGATIVE /* no negative exists */ ||
                         op.type() == DensityFunctionTypes.UnaryOperation.Type.QUARTER_NEGATIVE /* no negative exists */) {
-                        final DFCacheControl cacheControl = (DFCacheControl) (Object) op;
-                        try {
-                            cacheControl.dfuncopto$refreshMinMaxCache();
-                            cacheControl.dfuncopto$setMinMaxCachingDisabled(false);
-                            return new DensityFunctionTypes.UnaryOperation(op.type(), inner.input(), op.minValue(), op.maxValue());
-                        } finally {
-                            cacheControl.dfuncopto$setMinMaxCachingDisabled(true);
-                        }
+                        return new DensityFunctionTypes.UnaryOperation(op.type(), inner.input(), op.minValue(), op.maxValue());
                     }
                 }
                 if (inner.type() == DensityFunctionTypes.UnaryOperation.Type.SQUARE) {
