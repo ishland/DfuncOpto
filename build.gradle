@@ -44,6 +44,12 @@ dependencies {
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 }
 
+afterEvaluate {
+	migrateMappings.configure {
+		outputDir = project.file("src/main/java")
+	}
+}
+
 processResources {
 	inputs.property "version", project.version
 
