@@ -19,7 +19,9 @@ import net.minecraft.util.Util;
 import net.minecraft.world.gen.GeneratorOptions;
 import net.minecraft.world.gen.WorldPresets;
 import net.minecraft.world.gen.chunk.ChunkGeneratorSettings;
+import net.minecraft.world.gen.chunk.ChunkNoiseSampler;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
+import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 import net.minecraft.world.gen.noise.NoiseConfig;
 import net.minecraft.world.gen.noise.NoiseRouter;
 import net.minecraft.world.level.WorldGenSettings;
@@ -62,17 +64,30 @@ public final class TestStandalone {
         return holder.getCombinedRegistryManager();
     }
 
+    private static DensityFunction runApply(DensityFunction df) {
+        return df.apply(densityFunction -> {
+            if (densityFunction instanceof DensityFunctionTypes.Wrapping wrapping) {
+                if (wrapping.type() == DensityFunctionTypes.Wrapping.Type.CACHE2D) {
+                    return new ChunkNoiseSampler.Cache2D(densityFunction);
+                }
+            }
+
+            return densityFunction;
+        });
+    }
+
     public static void main() {
         SharedConstants.createGameVersion();
         Bootstrap.initialize();
 
         final DynamicRegistryManager.Immutable registryManager = getRegistryManager();
         final ChunkGeneratorSettings settings = registryManager.get(RegistryKeys.CHUNK_GENERATOR_SETTINGS).get(ChunkGeneratorSettings.OVERWORLD);
-        NoiseRouter router = settings.noiseRouter();
         OptoTransformation.DO_COMPILE = false;
-        final DensityFunction func = NoiseConfig.create(settings, registryManager.getWrapperOrThrow(RegistryKeys.NOISE_PARAMETERS), 0xffff).getNoiseRouter().finalDensity();
+        final NoiseRouter vanillaRouter = NoiseConfig.create(settings, registryManager.getWrapperOrThrow(RegistryKeys.NOISE_PARAMETERS), 0xffff).getNoiseRouter();
+        final DensityFunction func = runApply(vanillaRouter.finalDensity());
         OptoTransformation.DO_COMPILE = true;
-        final DensityFunction rfunc = NoiseConfig.create(settings, registryManager.getWrapperOrThrow(RegistryKeys.NOISE_PARAMETERS), 0xffff).getNoiseRouter().finalDensity();
+        final NoiseRouter optimizedRouter = NoiseConfig.create(settings, registryManager.getWrapperOrThrow(RegistryKeys.NOISE_PARAMETERS), 0xffff).getNoiseRouter();
+        final DensityFunction rfunc = runApply(optimizedRouter.finalDensity());
 
         for (int i = 0; i < 10; i++) {
             benchmark(rfunc, "DfuncOpto");
@@ -90,8 +105,6 @@ public final class TestStandalone {
         }
         stopwatch.stop();
 
-        System.out.println(name + " Took: " + stopwatch);
-
-        System.out.println(sum);
+        System.out.println(String.format("%s: Sum: %f, Time: %s", name, sum, stopwatch));
     }
 }
