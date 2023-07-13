@@ -32,6 +32,10 @@ public class FoldConstants {
             return new DensityFunctionTypes.Constant(0.0);
         }
 
+        if (df instanceof DensityFunctionTypes.WeirdScaledSampler op && op.noise().noise() == null) {
+            return new DensityFunctionTypes.Constant(0.0);
+        }
+
         // when this executes for folding constants, it should be already converted to LinearOperation
         if (df instanceof DensityFunctionTypes.LinearOperation op) {
             if (op.argument1() instanceof DensityFunctionTypes.Constant const1 && op.argument2() instanceof DensityFunctionTypes.Constant const2) {
