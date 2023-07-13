@@ -1,5 +1,6 @@
 package com.ishland.dfuncopto.mixin.dfts;
 
+import com.ishland.dfuncopto.common.DensityFunctionUtil;
 import com.ishland.dfuncopto.common.IDensityFunction;
 import com.ishland.dfuncopto.common.SharedConstants;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
@@ -19,7 +20,7 @@ public class MixinDFTRegistryEntryHolder implements IDensityFunction<DensityFunc
 
     @Override
     public DensityFunctionTypes.RegistryEntryHolder dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
-        return new DensityFunctionTypes.RegistryEntryHolder(this.function);
+        return new DensityFunctionTypes.RegistryEntryHolder(new RegistryEntry.Direct<>(DensityFunctionUtil.deepClone(this.function.value(), cloneCache)));
     }
 
     @Override

@@ -34,7 +34,7 @@ public abstract class MixinDFTUnaryOperation implements IDensityFunction<Density
     @Override
     public DensityFunctionTypes.UnaryOperation dfuncopto$deepClone0(Reference2ReferenceMap<DensityFunction, DensityFunction> cloneCache) {
         final DensityFunctionTypes.UnaryOperation copy = new DensityFunctionTypes.UnaryOperation(this.type, DensityFunctionUtil.deepClone(this.input, cloneCache), this.minValue, this.maxValue);
-        ((DFCacheControl) (Object) copy).dfuncopto$refreshMinMaxCache();
+//        ((DFCacheControl) (Object) copy).dfuncopto$refreshMinMaxCache();
         return copy;
     }
 

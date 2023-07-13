@@ -41,28 +41,41 @@ public class BranchElimination {
         }
 
         if (df instanceof DensityFunctionTypes.BinaryOperation op) {
-            final DFCacheControl cacheControl = (DFCacheControl) (Object) op;
             if (op.type() == DensityFunctionTypes.BinaryOperationLike.Type.MAX || op.type() == DensityFunctionTypes.BinaryOperationLike.Type.MIN) {
+                DFCacheControl ctrl1 = op.argument1() instanceof DFCacheControl ctrl ? ctrl : null;
+                DFCacheControl ctrl2 = op.argument2() instanceof DFCacheControl ctrl ? ctrl : null;
                 try {
-                    cacheControl.dfuncopto$refreshMinMaxCache();
-                    cacheControl.dfuncopto$setMinMaxCachingDisabled(false);
+                    if (ctrl1 != null) {
+                        ctrl1.dfuncopto$refreshMinMaxCache();
+                        ctrl1.dfuncopto$setMinMaxCachingDisabled(false);
+                    }
+                    if (ctrl2 != null) {
+                        ctrl2.dfuncopto$refreshMinMaxCache();
+                        ctrl2.dfuncopto$setMinMaxCachingDisabled(false);
+                    }
+
+                    final double arg1min = op.argument1().minValue();
+                    final double arg1max = op.argument1().maxValue();
+                    final double arg2min = op.argument2().minValue();
+                    final double arg2max = op.argument2().maxValue();
                     if (op.type() == DensityFunctionTypes.BinaryOperationLike.Type.MAX) {
-                        if (op.argument1().minValue() >= op.argument2().maxValue()) {
+                        if (arg1min >= arg2max) {
                             return op.argument1();
                         }
-                        if (op.argument2().minValue() >= op.argument1().maxValue()) {
+                        if (arg2min >= arg1max) {
                             return op.argument2();
                         }
                     } else if (op.type() == DensityFunctionTypes.BinaryOperationLike.Type.MIN) {
-                        if (op.argument1().maxValue() <= op.argument2().minValue()) {
+                        if (arg1max <= arg2min) {
                             return op.argument1();
                         }
-                        if (op.argument2().maxValue() <= op.argument1().minValue()) {
+                        if (arg2max <= arg1min) {
                             return op.argument2();
                         }
                     }
                 } finally {
-                    cacheControl.dfuncopto$setMinMaxCachingDisabled(true);
+                    if (ctrl1 != null) ctrl1.dfuncopto$setMinMaxCachingDisabled(true);
+                    if (ctrl2 != null) ctrl2.dfuncopto$setMinMaxCachingDisabled(true);
                 }
             }
         }
