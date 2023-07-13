@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(DensityFunctionTypes.Clamp.class)
-public class MixinDFTClamp implements IDensityFunction<DensityFunctionTypes.Clamp> {
+public abstract class MixinDFTClamp implements IDensityFunction<DensityFunctionTypes.Clamp>, DensityFunctionTypes.Unary {
 
     @Mutable
     @Shadow @Final private DensityFunction input;
@@ -71,5 +71,13 @@ public class MixinDFTClamp implements IDensityFunction<DensityFunctionTypes.Clam
         final DensityFunction apply = this.input.apply(visitor);
         if (apply == this.input) return visitor.apply((DensityFunction) this);
         return new DensityFunctionTypes.Clamp(apply, this.minValue, this.maxValue);
+    }
+
+    @Override
+    public void fill(double[] densities, EachApplier applier) {
+        this.input.fill(densities, applier);
+        for (int i = 0, densitiesLength = densities.length; i < densitiesLength; i++) {
+            densities[i] = MathHelper.clamp(densities[i], this.minValue, this.maxValue);
+        }
     }
 }
