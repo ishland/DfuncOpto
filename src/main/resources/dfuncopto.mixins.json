@@ -22,6 +22,7 @@
 		"dfts.MixinDFTUnaryOperation",
 		"dfts.MixinDFTWeirdScaledSampler",
 		"dfts.MixinDFTWrapping",
+		"dfts.MixinDFTYClampedGradient",
 		"test.MixinServerMain"
 	],
 	"injectors": {
