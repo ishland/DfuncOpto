@@ -37,6 +37,7 @@ public class SharedConstants {
             }
         } catch (Throwable t) {
             System.err.println("Failed to determine FMA support, assuming no FMA support");
+            t.printStackTrace();
             hasFMA = false;
         }
         SharedConstants.hasFMA = hasFMA;
