@@ -76,7 +76,7 @@ public final class TestStandalone {
         });
     }
 
-    public static void main() {
+    public static void main(String[] args) {
         SharedConstants.createGameVersion();
         Bootstrap.initialize();
 
@@ -90,21 +90,82 @@ public final class TestStandalone {
         final DensityFunction rfunc = runApply(optimizedRouter.finalDensity());
 
         for (int i = 0; i < 10; i++) {
+            System.out.println("Iteration " + i);
             benchmark(rfunc, "DfuncOpto");
-            benchmark(func, "Vanilla");
+            benchmark(func, "Vanilla  ");
+            benchmarkBatched(rfunc, "DfuncOpto");
+            benchmarkBatched(func, "Vanilla  ");
+            System.out.println();
         }
     }
 
     private static void benchmark(DensityFunction rfunc, String name) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         double sum = 0;
-        for (int x = 0; x < 100; x++) {
-            for (int z = 0; z < 1000; z++) {
+        for (int x = 0; x < 5000; x++) {
+            for (int z = 0; z < 24; z++) {
                 sum += rfunc.sample(new DensityFunction.UnblendedNoisePos(x << 2, 50, z << 2));
             }
         }
         stopwatch.stop();
 
-        System.out.println(String.format("%s: Sum: %f, Time: %s", name, sum, stopwatch));
+        System.out.println(String.format("%s: Sum: %.10f, Time: %s", name, sum, stopwatch));
     }
+
+    private static void benchmarkBatched(DensityFunction rfunc, String name) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        double sum = 0;
+        double[] batch = new double[24];
+        for (int x = 0; x < 5000; x++) {
+            final BatchedZApplier applier = new BatchedZApplier(x << 2, 50);
+            rfunc.fill(batch, applier);
+            for (double v : batch) {
+                sum += v;
+            }
+        }
+        stopwatch.stop();
+
+        System.out.println(String.format("%s batched: Sum: %.10f, Time: %s", name, sum, stopwatch));
+    }
+
+    private static class BatchedZApplier implements DensityFunction.EachApplier, DensityFunction.NoisePos {
+
+        private final int x;
+        private final int y;
+        private int z;
+
+        private BatchedZApplier(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override
+        public DensityFunction.NoisePos at(int index) {
+            this.z = index << 2;
+            return this;
+        }
+
+        @Override
+        public void fill(double[] densities, DensityFunction densityFunction) {
+            for (int i = 0, densitiesLength = densities.length; i < densitiesLength; i++) {
+                densities[i] = densityFunction.sample(this.at(i));
+            }
+        }
+
+        @Override
+        public int blockX() {
+            return this.x;
+        }
+
+        @Override
+        public int blockY() {
+            return this.y;
+        }
+
+        @Override
+        public int blockZ() {
+            return this.z;
+        }
+    }
+
 }

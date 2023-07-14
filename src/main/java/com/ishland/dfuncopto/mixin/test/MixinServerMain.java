@@ -12,7 +12,7 @@ public class MixinServerMain {
 
     @Inject(method = "main", at = @At("HEAD"))
     private static void onInit(String[] args, CallbackInfo ci) {
-        TestStandalone.main();
+        TestStandalone.main(args);
         System.exit(0);
     }
 
