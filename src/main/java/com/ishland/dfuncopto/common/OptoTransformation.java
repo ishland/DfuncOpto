@@ -35,7 +35,7 @@ public class OptoTransformation {
                 NormalizeTree::normalize,
                 InstCombine::combine
         );
-        DotExporter.writeToDisk(id + "-" + name + "-after", copy);
+        DotExporter.writeToDisk(id + "-" + name + "-after", optimized);
 //        deduplicate(optimized);
 //        DotExporter.writeToDisk(id + "-" + name + "-stage2", optimized);
         return optimized;
