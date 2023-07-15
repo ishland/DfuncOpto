@@ -23,6 +23,7 @@
 		"dfts.MixinDFTWeirdScaledSampler",
 		"dfts.MixinDFTWrapping",
 		"dfts.MixinDFTYClampedGradient",
+		"equality.MixinDensityFunctionNoise",
 		"test.MixinServerMain"
 	],
 	"injectors": {

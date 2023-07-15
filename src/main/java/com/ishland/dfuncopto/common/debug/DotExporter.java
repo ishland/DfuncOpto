@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
 import org.apache.commons.io.file.PathUtils;
@@ -108,12 +109,23 @@ public class DotExporter {
             if (DensityFunction.class.isAssignableFrom(field.getType())) continue;
             try {
                 field.setAccessible(true);
-                builder.append(field.getName()).append(": ").append((field.getType().isPrimitive() || field.getType().isEnum()) ? field.get(df) : getClazzName(field.getType())).append('\n');
+                builder.append(field.getName()).append(": ").append(getObj(df, field)).append('\n');
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
         return StringEscapeUtils.escapeJson(builder.toString().trim());
+    }
+
+    private static String getObj(DensityFunction df, Field field) throws IllegalAccessException {
+        final Object obj = field.get(df);
+        if (field.getType().isPrimitive() || field.getType().isEnum()) {
+            return String.valueOf(obj);
+        }
+        if (obj instanceof DensityFunction.Noise noise) {
+            return String.format("Noise{%s}", noise.noiseData().getKey().map(RegistryKey::toString).orElseGet(() -> String.valueOf(noise.noiseData().value())));
+        }
+        return getClazzName(field.getType());
     }
 
     private static String getClazzName(Class<?> clazz) {
