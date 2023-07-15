@@ -31,12 +31,12 @@ public class OptoTransformation {
         DotExporter.writeToDisk(id + "-" + name + "-before", copy);
         final DensityFunction optimized = optimize(name, copy,
                 InlineHolders::inline,
-                BreakBlending::breakBlending,
+//                BreakBlending::breakBlending,
                 FoldConstants::fold,
                 BranchElimination::eliminate,
                 NormalizeTree::normalize,
-                InstCombine::combine
-//                ExtraCaching::add
+                InstCombine::combine,
+                ExtraCaching::add
         );
         DotExporter.writeToDisk(id + "-" + name + "-after", optimized);
 //        deduplicate(optimized);

@@ -53,6 +53,9 @@ public class ExtraCaching {
             for (DensityFunction child : idf.dfuncopto$getChildren()) {
                 if (child instanceof DensityFunctionTypes.ShiftedNoise noise) {
                     if (noise.yScale() == 0 && noise.shiftY() instanceof DensityFunctionTypes.Constant) {
+                        if (df instanceof DensityFunctionTypes.Wrapping wrapping && wrapping.type() == DensityFunctionTypes.Wrapping.Type.CACHE2D) {
+                            continue; // don't do it twice
+                        }
                         // y doesn't matter
                         idf.dfuncopto$replace(child, new DWrapping(DWrapping.Type.Cache2D, child));
                         return df;
@@ -60,6 +63,9 @@ public class ExtraCaching {
                 }
                 if (child instanceof DensityFunctionTypes.Noise noise) {
                     if (noise.yScale() == 0) {
+                        if (df instanceof DensityFunctionTypes.Wrapping wrapping && wrapping.type() == DensityFunctionTypes.Wrapping.Type.CACHE2D) {
+                            continue; // don't do it twice
+                        }
                         // y doesn't matter
                         idf.dfuncopto$replace(child, new DWrapping(DWrapping.Type.Cache2D, child));
                         return df;
