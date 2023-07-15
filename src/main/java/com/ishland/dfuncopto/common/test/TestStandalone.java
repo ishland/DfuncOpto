@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.ishland.dfuncopto.common.OptoTransformation;
 import com.ishland.dfuncopto.common.opto.functions.Cache3D;
 import com.ishland.dfuncopto.common.opto.functions.DWrapping;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Bootstrap;
 import net.minecraft.SharedConstants;
 import net.minecraft.registry.CombinedDynamicRegistries;
@@ -28,6 +29,7 @@ import net.minecraft.world.gen.noise.NoiseConfig;
 import net.minecraft.world.gen.noise.NoiseRouter;
 import net.minecraft.world.level.WorldGenSettings;
 
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,7 +40,7 @@ public final class TestStandalone {
         record WorldCreationSettings(WorldGenSettings worldGenSettings, DataConfiguration dataConfiguration) {
         }
 
-        ResourcePackManager resourcePackManager = new ResourcePackManager(new VanillaDataPackProvider());
+        ResourcePackManager resourcePackManager = VanillaDataPackProvider.createManager(FabricLoader.getInstance().getGameDir().resolve("benchmark-datapacks"));
         SaveLoading.DataPacks dataPacks = new SaveLoading.DataPacks(resourcePackManager, DataConfiguration.SAFE_MODE, false, true);
         SaveLoading.ServerConfig serverConfig = new SaveLoading.ServerConfig(dataPacks, CommandManager.RegistrationEnvironment.DEDICATED, 2);
         final ExecutorService service = Executors.newSingleThreadExecutor();
@@ -109,8 +111,9 @@ public final class TestStandalone {
             benchmark(rfunc, "DfuncOpto ");
             benchmark(rfuncd, "DfuncOptoD");
             benchmark(func, "Vanilla   ");
-            benchmarkBatched(rfunc, "DfuncOpto");
-            benchmarkBatched(func, "Vanilla  ");
+            benchmarkBatched(rfunc, "DfuncOpto ");
+            benchmarkBatched(rfuncd, "DfuncOptoD");
+            benchmarkBatched(func, "Vanilla   ");
             System.out.println();
         }
     }
