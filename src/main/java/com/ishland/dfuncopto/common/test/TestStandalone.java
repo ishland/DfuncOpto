@@ -2,6 +2,8 @@ package com.ishland.dfuncopto.common.test;
 
 import com.google.common.base.Stopwatch;
 import com.ishland.dfuncopto.common.OptoTransformation;
+import com.ishland.dfuncopto.common.opto.functions.Cache3D;
+import com.ishland.dfuncopto.common.opto.functions.DWrapping;
 import net.minecraft.Bootstrap;
 import net.minecraft.SharedConstants;
 import net.minecraft.registry.CombinedDynamicRegistries;
@@ -64,11 +66,21 @@ public final class TestStandalone {
         return holder.getCombinedRegistryManager();
     }
 
-    private static DensityFunction runApply(DensityFunction df) {
+    private static DensityFunction runApply(DensityFunction df, boolean enableExtraCaching) {
         return df.apply(densityFunction -> {
             if (densityFunction instanceof DensityFunctionTypes.Wrapping wrapping) {
                 if (wrapping.type() == DensityFunctionTypes.Wrapping.Type.CACHE2D) {
-                    return new ChunkNoiseSampler.Cache2D(densityFunction);
+                    return new ChunkNoiseSampler.Cache2D(wrapping.wrapped());
+                }
+            }
+            if (enableExtraCaching) {
+                if (densityFunction instanceof DWrapping wrapping) {
+                    if (wrapping.type() == DWrapping.Type.Cache3D) {
+                        return new Cache3D(wrapping.wrapped());
+                    }
+                    if (wrapping.type() == DWrapping.Type.Cache2D) {
+                        return new ChunkNoiseSampler.Cache2D(wrapping.wrapped());
+                    }
                 }
             }
 
@@ -84,15 +96,19 @@ public final class TestStandalone {
         final ChunkGeneratorSettings settings = registryManager.get(RegistryKeys.CHUNK_GENERATOR_SETTINGS).get(ChunkGeneratorSettings.OVERWORLD);
         OptoTransformation.DO_COMPILE = false;
         final NoiseRouter vanillaRouter = NoiseConfig.create(settings, registryManager.getWrapperOrThrow(RegistryKeys.NOISE_PARAMETERS), 0xffff).getNoiseRouter();
-        final DensityFunction func = runApply(vanillaRouter.finalDensity());
+        final DensityFunction func = runApply(vanillaRouter.finalDensity(), false);
         OptoTransformation.DO_COMPILE = true;
         final NoiseRouter optimizedRouter = NoiseConfig.create(settings, registryManager.getWrapperOrThrow(RegistryKeys.NOISE_PARAMETERS), 0xffff).getNoiseRouter();
-        final DensityFunction rfunc = runApply(optimizedRouter.finalDensity());
+        final DensityFunction rfunc = runApply(optimizedRouter.finalDensity(), false);
+        final DensityFunction rfuncd = runApply(optimizedRouter.finalDensity(), true);
+
+        // horizontalCellCount: 4, verticalCellCount: 48
 
         for (int i = 0; i < 10; i++) {
             System.out.println("Iteration " + i);
-            benchmark(rfunc, "DfuncOpto");
-            benchmark(func, "Vanilla  ");
+            benchmark(rfunc, "DfuncOpto ");
+            benchmark(rfuncd, "DfuncOptoD");
+            benchmark(func, "Vanilla   ");
             benchmarkBatched(rfunc, "DfuncOpto");
             benchmarkBatched(func, "Vanilla  ");
             System.out.println();
@@ -102,9 +118,11 @@ public final class TestStandalone {
     private static void benchmark(DensityFunction rfunc, String name) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         double sum = 0;
-        for (int x = 0; x < 5000; x++) {
-            for (int z = 0; z < 24; z++) {
-                sum += rfunc.sample(new DensityFunction.UnblendedNoisePos(x << 2, 50, z << 2));
+        for (int x = 0; x < 100; x++) {
+            for (int z = 0; z < 100; z++) {
+                for (int index = 0; index < 48; index ++) {
+                    sum += rfunc.sample(new DensityFunction.UnblendedNoisePos(x << 2, -64 + (index * 8), z << 2));
+                }
             }
         }
         stopwatch.stop();
@@ -115,12 +133,14 @@ public final class TestStandalone {
     private static void benchmarkBatched(DensityFunction rfunc, String name) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         double sum = 0;
-        double[] batch = new double[24];
-        for (int x = 0; x < 5000; x++) {
-            final BatchedZApplier applier = new BatchedZApplier(x << 2, 50);
-            rfunc.fill(batch, applier);
-            for (double v : batch) {
-                sum += v;
+        double[] batch = new double[48];
+        for (int x = 0; x < 100; x++) {
+            for (int z = 0; z < 100; z++) {
+                final BatchedZApplier applier = new BatchedZApplier(x << 2, z << 2);
+                rfunc.fill(batch, applier);
+                for (double v : batch) {
+                    sum += v;
+                }
             }
         }
         stopwatch.stop();
@@ -131,17 +151,17 @@ public final class TestStandalone {
     private static class BatchedZApplier implements DensityFunction.EachApplier, DensityFunction.NoisePos {
 
         private final int x;
-        private final int y;
-        private int z;
+        private int y;
+        private final int z;
 
-        private BatchedZApplier(int x, int y) {
+        private BatchedZApplier(int x, int z) {
             this.x = x;
-            this.y = y;
+            this.z = z;
         }
 
         @Override
         public DensityFunction.NoisePos at(int index) {
-            this.z = index << 2;
+            this.y = -64 + (index * 8);
             return this;
         }
 

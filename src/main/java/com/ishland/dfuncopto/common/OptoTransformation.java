@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.ishland.dfuncopto.common.debug.DotExporter;
 import com.ishland.dfuncopto.common.opto.BranchElimination;
 import com.ishland.dfuncopto.common.opto.BreakBlending;
+import com.ishland.dfuncopto.common.opto.ExtraCaching;
 import com.ishland.dfuncopto.common.opto.FoldConstants;
 import com.ishland.dfuncopto.common.opto.InlineHolders;
 import com.ishland.dfuncopto.common.opto.InstCombine;
@@ -13,6 +14,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
+import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -34,6 +36,7 @@ public class OptoTransformation {
                 BranchElimination::eliminate,
                 NormalizeTree::normalize,
                 InstCombine::combine
+//                ExtraCaching::add
         );
         DotExporter.writeToDisk(id + "-" + name + "-after", optimized);
 //        deduplicate(optimized);
@@ -97,6 +100,9 @@ public class OptoTransformation {
                 if (visitNodeReplacing(child, visitors)) {
                     return true;
                 }
+            }
+            if (df instanceof DensityFunctionTypes.RangeChoice rangeChoice && rangeChoice.minInclusive() == -1000000.0 && rangeChoice.maxExclusive() == 1.5625) {
+                return false;
             }
             return false;
         }
