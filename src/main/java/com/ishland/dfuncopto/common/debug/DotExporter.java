@@ -106,7 +106,8 @@ public class DotExporter {
         builder.append(System.identityHashCode(df)).append('\n');
         builder.append(getClazzName(df.getClass())).append('\n');
         for (Field field : df.getClass().getDeclaredFields()) {
-            if (DensityFunction.class.isAssignableFrom(field.getType())) continue;
+//            if (DensityFunction.class.isAssignableFrom(field.getType())) continue;
+            if (Modifier.isStatic(field.getModifiers())) continue;
             try {
                 field.setAccessible(true);
                 builder.append(field.getName()).append(": ").append(getObj(df, field)).append('\n');
@@ -121,6 +122,9 @@ public class DotExporter {
         final Object obj = field.get(df);
         if (field.getType().isPrimitive() || field.getType().isEnum()) {
             return String.valueOf(obj);
+        }
+        if (obj instanceof DensityFunction child) {
+            return String.format("Child{%d}", System.identityHashCode(child));
         }
         if (obj instanceof DensityFunction.Noise noise) {
             return String.format("Noise{%s}", noise.noiseData().getKey().map(RegistryKey::toString).orElseGet(() -> String.valueOf(noise.noiseData().value())));
